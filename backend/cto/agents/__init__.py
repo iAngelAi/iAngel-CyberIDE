@@ -6,3 +6,5 @@ __all__ = [
     "get_agent_config",
     "AGENT_PRESETS",
 ]
+# Agents Module
+"""Sous-module agents du CTO."""

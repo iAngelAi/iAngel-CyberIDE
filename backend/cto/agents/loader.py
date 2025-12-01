@@ -244,3 +244,5 @@ def list_agents_with_permission(permission: str, value: bool = True) -> list[Age
         config for config in AGENT_PRESETS.values()
         if config.permissions.get(permission) == value
     ]
+# Agent Loader
+"""Chargeur d'agents."""

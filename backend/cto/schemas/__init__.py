@@ -19,3 +19,5 @@ __all__ = [
     "TaskRequest",
     "TaskResult",
 ]
+# Schemas Module
+"""Sous-module schémas du CTO."""
