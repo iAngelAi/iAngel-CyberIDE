@@ -1,0 +1,142 @@
+# =============================================================================
+# CyberIDE Docker Compose - Full Development Environment
+# =============================================================================
+# Services:
+#   - backend: FastAPI + WebSocket server (neural_cli)
+#   - frontend: React + Three.js (Vite dev server)
+#
+# Optimizations for M4 Mac (16GB RAM):
+#   - Volumes on external SSD (/Volumes/DevSSD/)
+#   - Named volumes for persistence
+#   - Hot reload enabled for both services
+#   - Health checks for monitoring
+# =============================================================================
+
+services:
+  # ===========================================================================
+  # Backend Service (FastAPI + Neural Core)
+  # ===========================================================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      platforms:
+        - linux/arm64
+    container_name: cyberide-backend
+    ports:
+      - "8000:8000"  # FastAPI server
+    volumes:
+      # Hot reload: Mount source code
+      - ./neural_cli:/app/neural_cli:ro  # Read-only for safety
+      - ./tests:/app/tests:ro
+
+      # Data persistence: Use named volumes (Docker manages location)
+      - backend-data:/app/data
+      - coverage-data:/app  # For coverage.json, neural_status.json
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CYBER_PROJECT_ROOT=/app
+      - LOG_LEVEL=info
+    networks:
+      - cyberide-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+    # Resource limits for M4 Mac (16GB RAM)
+    deploy:
+      resources:
+        limits:
+          memory: 2G  # Limit to 2GB (conservative for 16GB total)
+        reservations:
+          memory: 512M
+
+  # ===========================================================================
+  # Frontend Service (React + Vite)
+  # ===========================================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      platforms:
+        - linux/arm64
+    container_name: cyberide-frontend
+    ports:
+      - "5173:80"  # Nginx serves on 80, mapped to 5173 externally
+    volumes:
+      # Hot reload: Mount source code
+      - ./src:/app/src:ro
+      - ./public:/app/public:ro
+      - ./index.html:/app/index.html:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./tailwind.config.js:/app/tailwind.config.js:ro
+
+      # Node modules cache (named volume for performance)
+      - frontend-node-modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000/ws
+    networks:
+      - cyberide-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+
+# =============================================================================
+# Named Volumes (Docker Managed)
+# =============================================================================
+# Option A (your choice): Docker manages storage location
+# Pros:
+#   - Automatic cleanup with `docker-compose down -v`
+#   - Portable across machines
+#   - No permission issues
+# Cons:
+#   - Files not directly visible on host
+#   - Requires `docker cp` to extract files
+#
+# To inspect volumes:
+#   docker volume inspect cyberide_backend-data
+#   docker volume ls
+#
+# To backup data:
+#   docker run --rm -v cyberide_backend-data:/data -v $(pwd):/backup \
+#     alpine tar czf /backup/backend-data.tar.gz /data
+# =============================================================================
+volumes:
+  backend-data:
+    driver: local
+    name: cyberide_backend-data
+
+  coverage-data:
+    driver: local
+    name: cyberide_coverage-data
+
+  frontend-node-modules:
+    driver: local
+    name: cyberide_frontend-node-modules
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  cyberide-network:
+    driver: bridge
+    name: cyberide-net

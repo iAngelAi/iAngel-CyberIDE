@@ -1,0 +1,182 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# .gitignore — CyberIDE (Neural Architect)
+# Stack: React + Three.js (Frontend) / Python FastAPI (Backend)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Node.js
+node_modules/
+.npm/
+.pnpm-store/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env.local
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BUILD OUTPUTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Vite / React
+dist/
+dist-ssr/
+*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TESTING & COVERAGE
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+coverage.json
+*.cover
+*.py,cover
+
+# Vitest
+coverage/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# IDE & EDITORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# JetBrains (PyCharm, WebStorm)
+.idea/
+
+# Vim
+*.swp
+*.swo
+*.swn
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OS FILES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECRETS & ENVIRONMENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# API Keys / Secrets
+*.pem
+*.key
+secrets/
+.secrets/
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LOGS & RUNTIME
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PROJECT SPECIFIC — CyberIDE
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Neural status (generated at runtime)
+neural_status.json
+
+# Temporary analysis files
+type_assertion_audit.md
+type_assertion_fixes.json
+
+# Local Claude settings (may contain personal preferences)
+.claude/settings.local.json
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPTIONAL: KEEP THESE IF YOU WANT THEM IN REPO
+# Uncomment to ignore:
+# ═══════════════════════════════════════════════════════════════════════════
+
+# # Lock files (usually kept for reproducibility)
+# package-lock.json
+# pnpm-lock.yaml
+# yarn.lock
+
+# # Configuration that might be personal
+# .claude/CLAUDE.md

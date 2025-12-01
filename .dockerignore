@@ -1,0 +1,79 @@
+# =============================================================================
+# CyberIDE Docker Ignore
+# Exclude these from Docker build context for faster builds
+# =============================================================================
+
+# Python virtual environments (the cause of your headaches!)
+venv/
+neural_venv/
+.venv/
+env/
+.env/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+
+# Node modules (handled by Docker volumes)
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm/
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Docker (don't include in context)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+test_results.json
+.report.json
+
+# Logs (will go to /Volumes/DevSSD/)
+*.log
+logs/
+
+# Environment files (security)
+.env
+.env.local
+.env.*.local
+
+# Documentation (not needed in container)
+*.md
+!README.md
+docs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# MacOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
