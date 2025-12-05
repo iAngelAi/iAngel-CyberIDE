@@ -1,0 +1,124 @@
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "GitHub repository management, PRs, issues, code review",
+      "agents": ["architecte-principal", "developpeur-fullstack", "ingenieur-backend-mcp", "ingenieur-qa-automation", "coach-agile"]
+    },
+    "google-cloud": {
+      "command": "npx",
+      "args": ["@googleapis/gcloud-mcp"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GCP_CREDENTIALS_PATH}"
+      },
+      "description": "Google Cloud Platform: Compute Engine, Cloud Storage, Cloud Functions, Cloud Run, BigQuery",
+      "agents": ["ingenieur-devops-sre", "architecte-principal", "ingenieur-donnees", "ingenieur-mlops"]
+    },
+    "azure-devops": {
+      "command": "node",
+      "args": ["${AZURE_DEVOPS_MCP_PATH}/dist/index.js"],
+      "env": {
+        "AZURE_DEVOPS_ORG_URL": "${AZURE_DEVOPS_URL}",
+        "AZURE_DEVOPS_PAT": "${AZURE_DEVOPS_TOKEN}"
+      },
+      "description": "Azure DevOps: Work items, pull requests, builds, test plans, wiki",
+      "agents": ["ingenieur-devops-sre", "coach-agile", "chef-produit-technique-tpm", "ingenieur-qa-automation"]
+    },
+    "digitalocean": {
+      "command": "npx",
+      "args": ["@digitalocean/mcp"],
+      "env": {
+        "DIGITALOCEAN_API_TOKEN": "${DO_TOKEN}"
+      },
+      "description": "DigitalOcean App Platform: Deploy and manage applications",
+      "agents": ["ingenieur-devops-sre", "developpeur-fullstack"]
+    },
+    "bigquery": {
+      "command": "npx",
+      "args": ["mcp-bigquery-server"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GCP_CREDENTIALS_PATH}",
+        "BIGQUERY_PROJECT_ID": "${GCP_PROJECT_ID}"
+      },
+      "description": "BigQuery: Secure read-only access to datasets for data analysis",
+      "agents": ["ingenieur-donnees", "ingenieur-mlops", "architecte-principal"]
+    },
+    "database-sqlite": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sqlite", "--db-path", "${DB_PATH}"],
+      "description": "SQLite database operations",
+      "agents": ["ingenieur-donnees", "developpeur-fullstack", "ingenieur-backend-mcp"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem", "${WORKSPACE_PATH}"],
+      "description": "File system operations (read/write with restricted access)",
+      "agents": ["all"]
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-puppeteer"],
+      "description": "Browser automation for testing and web scraping",
+      "agents": ["3DEngineer", "ConcepteurUXUI", "ingenieur-qa-automation"]
+    },
+    "gitlab": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-gitlab"],
+      "env": {
+        "GITLAB_PERSONAL_ACCESS_TOKEN": "${GITLAB_TOKEN}",
+        "GITLAB_API_URL": "${GITLAB_URL}"
+      },
+      "description": "GitLab repository management (optional)",
+      "agents": ["architecte-principal", "developpeur-fullstack", "ingenieur-backend-mcp"]
+    },
+    "google-analytics": {
+      "command": "npx",
+      "args": ["@google/analytics-mcp-server"],
+      "env": {
+        "GOOGLE_APPLICATION_CREDENTIALS": "${GCP_CREDENTIALS_PATH}"
+      },
+      "description": "Google Analytics data access",
+      "agents": ["ConcepteurUXUI", "chef-produit-technique-tpm"]
+    }
+  },
+  "security": {
+    "authentication": {
+      "oauth_scopes": "minimal",
+      "token_lifetime": "short-lived",
+      "rotation_policy": "regular"
+    },
+    "access_control": {
+      "principle": "least-privilege",
+      "agent_specific_permissions": true,
+      "audit_logging": true
+    },
+    "file_access": {
+      "allowed_directories": ["${WORKSPACE_PATH}", "${PROJECT_ROOT}"],
+      "read_only_by_default": true
+    }
+  },
+  "registry": {
+    "url": "https://registry.iangel-labs.com/mcp",
+    "allowlist_enabled": true,
+    "approved_servers": [
+      "github",
+      "google-cloud",
+      "azure-devops",
+      "digitalocean",
+      "bigquery",
+      "database-sqlite",
+      "filesystem",
+      "puppeteer"
+    ]
+  },
+  "orchestration": {
+    "lead_agent": "architecte-principal",
+    "discovery_protocol": "dynamic",
+    "tool_sharing": "enabled",
+    "parallel_execution": true
+  }
+}
