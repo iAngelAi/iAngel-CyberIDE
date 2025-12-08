@@ -5,13 +5,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import {
-  GitBranchInfo,
-  GitFileHeatMap,
-  GitCommitInfo,
-  GitDashboardData,
-  GIT_DASHBOARD_COLORS
+import type {
+  GitDashboardData
 } from '../../types/git';
+import { GIT_DASHBOARD_COLORS } from '../../types/git';
 import {
   GitBranch,
   GitCommit,
