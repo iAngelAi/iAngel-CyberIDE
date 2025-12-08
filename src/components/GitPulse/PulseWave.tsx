@@ -13,13 +13,12 @@
 import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { PulseWaveProps, DNA_COLORS } from '../../types/dna';
+import type { PulseWaveProps } from '../../types/dna';
 
 export const PulseWave: React.FC<PulseWaveProps> = ({
   active,
   intensity,
   color,
-  affectedFiles,
   onComplete
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -90,7 +89,7 @@ export const PulseWave: React.FC<PulseWaveProps> = ({
   }, [active]);
 
   // Animation frame
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     if (!active || !materialRef.current) return;
 
     startTimeRef.current += delta;
@@ -164,7 +163,6 @@ export const PulseManager: React.FC<PulseManagerProps> = ({ pulses }) => {
           active={true}
           intensity={pulse.intensity}
           color={pulse.color}
-          affectedFiles={pulse.affectedFiles}
           onComplete={() => handlePulseComplete(pulse.id)}
         />
       ))}

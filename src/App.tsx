@@ -111,11 +111,11 @@ function App() {
         setTimeout(() => setLastNotification(null), 3000);
       } else if (isGitPulseMessage(message)) {
         // Handle Git pulse events
-        const { hash, author, message: commitMsg, intensity, filesChanged } = message.data;
+        const { author, message: commitMsg, files_changed } = message.data;
 
         // Mise à jour des fichiers résonants basée sur les fichiers modifiés
         const newResonatingFiles = sourceFiles
-          .filter(file => filesChanged.some(changedFile => file.path.includes(changedFile)))
+          .filter(file => files_changed.some((changedFile: string) => file.path.includes(changedFile)))
           .map(file => file.id);
 
         setResonatingFiles(newResonatingFiles);

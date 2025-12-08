@@ -5,7 +5,8 @@
  */
 
 import React, { useState } from 'react';
-import { GitPulseEvent, GIT_PULSE_COLORS } from '../../types/git';
+import type { GitPulseEvent } from '../../types/git';
+import { GIT_PULSE_COLORS } from '../../types/git';
 import {
   GitCommit,
   GitBranch,
@@ -104,7 +105,7 @@ export const GitPulseTimeline: React.FC<GitPulseTimelineProps> = ({ pulses }) =>
       </div>
 
       <div className="space-y-2 max-h-[300px] overflow-y-auto">
-        {sortedPulses.map((pulse, index) => (
+        {sortedPulses.map((pulse) => (
           <div
             key={pulse.id}
             className={`

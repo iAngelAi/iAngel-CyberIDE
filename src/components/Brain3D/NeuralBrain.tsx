@@ -1,8 +1,9 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Sphere, MeshDistortMaterial } from '@react-three/drei';
+import { Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import type { NeuralRegion } from '../../types';
+import { brainVertexShader, brainFragmentShader } from '../../shaders/brainShaders';
 
 interface NeuralBrainProps {
   regions: NeuralRegion[];
@@ -23,11 +24,36 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
+  const shaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
+
+  // Enhanced shader material with custom effects - memoized properly
+  const customShaderMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        illuminationLevel: { value: illuminationLevel },
+        pulseIntensity: { value: illuminationLevel },
+        primaryColor: { value: new THREE.Color('#00f0ff') },
+        accentColor: { value: new THREE.Color('#ff00ff') }
+      },
+      vertexShader: brainVertexShader,
+      fragmentShader: brainFragmentShader,
+      transparent: true,
+      side: THREE.DoubleSide,
+    });
+  }, [illuminationLevel]);
 
   // Auto-rotation animation
   useFrame((state, delta) => {
     if (groupRef.current && autoRotate) {
       groupRef.current.rotation.y += delta * 0.1;
+    }
+
+    // Update shader uniforms
+    if (shaderMaterialRef.current) {
+      shaderMaterialRef.current.uniforms.time.value = state.clock.elapsedTime;
+      shaderMaterialRef.current.uniforms.illuminationLevel.value = illuminationLevel;
+      shaderMaterialRef.current.uniforms.pulseIntensity.value = illuminationLevel;
     }
 
     // Pulsing effect based on illumination
@@ -78,18 +104,22 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
 
   return (
     <group ref={groupRef}>
-      {/* Core Brain Sphere */}
-      <Sphere ref={coreRef} args={[2, 64, 64]} position={[0, 0, 0]}>
-        <MeshDistortMaterial
-          color="#0a0e27"
-          emissive="#00f0ff"
-          emissiveIntensity={illuminationLevel * 0.5}
-          metalness={0.8}
-          roughness={0.2}
-          distort={0.3}
-          speed={2}
+      {/* Core Brain Sphere with custom shader */}
+      <Sphere ref={coreRef} args={[2, 128, 128]} position={[0, 0, 0]}>
+        <primitive 
+          ref={shaderMaterialRef}
+          object={customShaderMaterial} 
+          attach="material" 
+        />
+      </Sphere>
+
+      {/* Inner glow layer */}
+      <Sphere args={[1.95, 64, 64]} position={[0, 0, 0]}>
+        <meshBasicMaterial
+          color="#00f0ff"
           transparent
-          opacity={0.9}
+          opacity={illuminationLevel * 0.1}
+          side={THREE.BackSide}
         />
       </Sphere>
 
@@ -104,15 +134,31 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
       {/* Neural Pathways */}
       {pathways}
 
-      {/* Outer Glow Ring */}
+      {/* Outer Glow Ring - Enhanced */}
       <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[3, 0.05, 16, 100]} />
+        <torusGeometry args={[3, 0.08, 16, 100]} />
         <meshStandardMaterial
           color="#00f0ff"
           emissive="#00f0ff"
-          emissiveIntensity={illuminationLevel}
+          emissiveIntensity={illuminationLevel * 1.5}
+          metalness={0.9}
+          roughness={0.1}
           transparent
-          opacity={0.6}
+          opacity={0.7}
+        />
+      </mesh>
+
+      {/* Additional ring for depth */}
+      <mesh position={[0, 0, 0]} rotation={[Math.PI / 2, 0, Math.PI / 4]}>
+        <torusGeometry args={[3.2, 0.05, 16, 100]} />
+        <meshStandardMaterial
+          color="#ff00ff"
+          emissive="#ff00ff"
+          emissiveIntensity={illuminationLevel * 1.2}
+          metalness={0.8}
+          roughness={0.2}
+          transparent
+          opacity={0.5}
         />
       </mesh>
     </group>
@@ -128,34 +174,62 @@ interface NeuralNodeProps {
 
 const NeuralNode: React.FC<NeuralNodeProps> = ({ region }) => {
   const meshRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
     if (meshRef.current && region.illumination > 0) {
-      // Pulsing effect for active nodes
-      const pulse = Math.sin(state.clock.elapsedTime * 3) * 0.1 + 0.9;
+      // Enhanced pulsing effect for active nodes
+      const pulse = Math.sin(state.clock.elapsedTime * 3) * 0.15 + 0.85;
       meshRef.current.scale.setScalar(0.3 * pulse);
+      
+      // Rotate the node slightly for dynamic effect
+      meshRef.current.rotation.x = state.clock.elapsedTime * 0.5;
+      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
+    }
+    
+    // Animate glow
+    if (glowRef.current && region.illumination > 0) {
+      const glowPulse = Math.sin(state.clock.elapsedTime * 4) * 0.2 + 0.8;
+      glowRef.current.scale.setScalar(0.5 * glowPulse);
     }
   });
 
   const color = getStatusColor(region.status);
-  const emissiveIntensity = region.illumination * 2;
+  const emissiveIntensity = region.illumination * 2.5;
 
   return (
-    <Sphere
-      ref={meshRef}
-      args={[0.3, 32, 32]}
-      position={region.position}
-    >
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={emissiveIntensity}
-        metalness={0.9}
-        roughness={0.1}
-        transparent
-        opacity={region.illumination > 0 ? 1 : 0.3}
-      />
-    </Sphere>
+    <group position={region.position}>
+      {/* Main node sphere */}
+      <Sphere
+        ref={meshRef}
+        args={[0.3, 32, 32]}
+      >
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={emissiveIntensity}
+          metalness={0.9}
+          roughness={0.1}
+          transparent
+          opacity={region.illumination > 0 ? 1 : 0.3}
+        />
+      </Sphere>
+      
+      {/* Outer glow */}
+      {region.illumination > 0 && (
+        <Sphere
+          ref={glowRef}
+          args={[0.5, 16, 16]}
+        >
+          <meshBasicMaterial
+            color={color}
+            transparent
+            opacity={region.illumination * 0.2}
+            side={THREE.BackSide}
+          />
+        </Sphere>
+      )}
+    </group>
   );
 };
 
