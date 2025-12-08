@@ -155,8 +155,14 @@
       theme('colors.cyber.secondary'),
       theme('colors.cyber.accent')
     );
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
+    /* Modern mask-composite with fallback */
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
     mask-composite: exclude;
     animation: rotate-slow 10s linear infinite;
   }

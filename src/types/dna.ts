@@ -77,7 +77,6 @@ export interface PulseWaveProps {
   active: boolean;
   intensity: number;
   color: string;
-  affectedFiles: string[];
   onComplete: () => void;
 }
 

@@ -26,7 +26,7 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
   const coreRef = useRef<THREE.Mesh>(null);
   const shaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
 
-  // Enhanced shader material with custom effects
+  // Enhanced shader material with custom effects - memoized properly
   const customShaderMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
       uniforms: {
@@ -41,7 +41,7 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
       transparent: true,
       side: THREE.DoubleSide,
     });
-  }, []);
+  }, [illuminationLevel]);
 
   // Auto-rotation animation
   useFrame((state, delta) => {

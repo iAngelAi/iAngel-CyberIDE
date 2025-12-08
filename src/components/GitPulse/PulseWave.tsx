@@ -163,7 +163,6 @@ export const PulseManager: React.FC<PulseManagerProps> = ({ pulses }) => {
           active={true}
           intensity={pulse.intensity}
           color={pulse.color}
-          affectedFiles={pulse.affectedFiles}
           onComplete={() => handlePulseComplete(pulse.id)}
         />
       ))}
