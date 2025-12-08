@@ -129,83 +129,107 @@ export const DNAHelix: React.FC<DNAHelixProps & {
 
   return (
     <group ref={groupRef}>
-      {/* Brin source (cyan) */}
+      {/* Brin source (cyan) - Enhanced with tube geometry */}
       {sourceStrandPoints.length > 1 && (
         <Line
           points={sourceStrandPoints}
           color={DNA_COLORS.SOURCE_STRAND}
-          lineWidth={2}
+          lineWidth={3}
           transparent
-          opacity={0.8}
+          opacity={0.9}
         />
       )}
 
-      {/* Brin test (violet) */}
+      {/* Brin test (violet) - Enhanced with tube geometry */}
       {testStrandPoints.length > 1 && (
         <Line
           points={testStrandPoints}
           color={DNA_COLORS.TEST_STRAND}
-          lineWidth={2}
+          lineWidth={3}
           transparent
-          opacity={0.8}
+          opacity={0.9}
         />
       )}
 
-      {/* Nodes source avec effet de résonance */}
+      {/* Nodes source avec effet de résonance - Enhanced */}
       {sourceFiles.slice(0, sourcePositions.length).map((file, index) => {
         const position = sourcePositions[index];
         const color = getSourceNodeColor(file);
         const resonanceIntensity = getResonanceIntensity(file.id);
 
         // Effet visuel de résonance : pulsation et grossissement
-        const sphereSize = 0.15 * (1 + resonanceIntensity * 0.5);
-        const emissiveIntensity = pulseIntensity * (1 + resonanceIntensity);
+        const sphereSize = 0.18 * (1 + resonanceIntensity * 0.5);
+        const emissiveIntensity = pulseIntensity * 1.5 * (1 + resonanceIntensity);
 
         return (
-          <Sphere
-            key={`source-${file.id}`}
-            position={position}
-            args={[sphereSize, 16, 16]}
-          >
-            <meshStandardMaterial
-              color={color}
-              emissive={color}
-              emissiveIntensity={emissiveIntensity}
-              transparent
-              opacity={0.9 * (1 + resonanceIntensity * 0.2)}
-            />
-          </Sphere>
+          <group key={`source-${file.id}`} position={position}>
+            <Sphere args={[sphereSize, 24, 24]}>
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={emissiveIntensity}
+                metalness={0.8}
+                roughness={0.2}
+                transparent
+                opacity={0.95 * (1 + resonanceIntensity * 0.2)}
+              />
+            </Sphere>
+            
+            {/* Outer glow for nodes */}
+            {file.testStatus === 'passing' && (
+              <Sphere args={[sphereSize * 1.5, 16, 16]}>
+                <meshBasicMaterial
+                  color={color}
+                  transparent
+                  opacity={pulseIntensity * 0.15}
+                  side={THREE.BackSide}
+                />
+              </Sphere>
+            )}
+          </group>
         );
       })}
 
-      {/* Nodes test avec effet de résonance */}
+      {/* Nodes test avec effet de résonance - Enhanced */}
       {testFiles.slice(0, testPositions.length).map((file, index) => {
         const position = testPositions[index];
         const color = getTestNodeColor(file);
         const resonanceIntensity = getResonanceIntensity(file.id);
 
         // Effet visuel de résonance : pulsation et grossissement
-        const sphereSize = 0.15 * (1 + resonanceIntensity * 0.5);
-        const emissiveIntensity = pulseIntensity * (1 + resonanceIntensity);
+        const sphereSize = 0.18 * (1 + resonanceIntensity * 0.5);
+        const emissiveIntensity = pulseIntensity * 1.5 * (1 + resonanceIntensity);
 
         return (
-          <Sphere
-            key={`test-${file.id}`}
-            position={position}
-            args={[sphereSize, 16, 16]}
-          >
-            <meshStandardMaterial
-              color={color}
-              emissive={color}
-              emissiveIntensity={emissiveIntensity}
-              transparent
-              opacity={0.9 * (1 + resonanceIntensity * 0.2)}
-            />
-          </Sphere>
+          <group key={`test-${file.id}`} position={position}>
+            <Sphere args={[sphereSize, 24, 24]}>
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={emissiveIntensity}
+                metalness={0.8}
+                roughness={0.2}
+                transparent
+                opacity={0.95 * (1 + resonanceIntensity * 0.2)}
+              />
+            </Sphere>
+            
+            {/* Outer glow for test nodes */}
+            {file.passed > 0 && (
+              <Sphere args={[sphereSize * 1.5, 16, 16]}>
+                <meshBasicMaterial
+                  color={color}
+                  transparent
+                  opacity={pulseIntensity * 0.15}
+                  side={THREE.BackSide}
+                />
+              </Sphere>
+            )}
+          </group>
         );
       })}
 
-      {/* Connexions entre source et test */}
+      {/* Connexions entre source et test - Enhanced */}
       {connections.map((connection) => {
         const sourceIndex = sourceFiles.findIndex(f => f.id === connection.sourceId);
         const testIndex = testFiles.findIndex(f => f.id === connection.testId);
@@ -231,25 +255,41 @@ export const DNAHelix: React.FC<DNAHelixProps & {
               new THREE.Vector3(...testPos)
             ]}
             color={color}
-            lineWidth={1}
+            lineWidth={connection.strength * 2}
             transparent
-            opacity={connection.strength * 0.7}
+            opacity={connection.strength * 0.8}
           />
         );
       })}
 
-      {/* Effet de particules optionnel */}
-      {pulseIntensity > 0.7 && (
+      {/* Effet de particules amélioré */}
+      {pulseIntensity > 0.5 && (
         <group>
           {sourcePositions.map((pos, i) => (
             <mesh key={`particle-${i}`} position={pos}>
-              <sphereGeometry args={[0.05, 8, 8]} />
+              <sphereGeometry args={[0.06, 8, 8]} />
               <meshStandardMaterial
                 color={DNA_COLORS.SOURCE_STRAND}
                 emissive={DNA_COLORS.SOURCE_STRAND}
-                emissiveIntensity={Math.sin(pulseTimeRef.current * 2 + i) * 0.5 + 0.5}
+                emissiveIntensity={Math.sin(pulseTimeRef.current * 2 + i) * 0.8 + 0.7}
                 transparent
-                opacity={0.5}
+                opacity={0.6}
+                metalness={0.9}
+                roughness={0.1}
+              />
+            </mesh>
+          ))}
+          {testPositions.map((pos, i) => (
+            <mesh key={`particle-test-${i}`} position={pos}>
+              <sphereGeometry args={[0.06, 8, 8]} />
+              <meshStandardMaterial
+                color={DNA_COLORS.TEST_STRAND}
+                emissive={DNA_COLORS.TEST_STRAND}
+                emissiveIntensity={Math.sin(pulseTimeRef.current * 2.5 + i) * 0.8 + 0.7}
+                transparent
+                opacity={0.6}
+                metalness={0.9}
+                roughness={0.1}
               />
             </mesh>
           ))}

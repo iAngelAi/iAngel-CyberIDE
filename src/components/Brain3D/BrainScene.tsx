@@ -1,7 +1,10 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Stars } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Stars, Environment } from '@react-three/drei';
 import { NeuralBrain } from './NeuralBrain';
 import { DNAHelix } from '../DNAHelix';
+import { EffectComposer, Bloom, ChromaticAberration } from '@react-three/postprocessing';
+import { BlendFunction } from 'postprocessing';
+import * as THREE from 'three';
 import type { BrainState } from '../../types';
 import type { SourceFileNode, TestFileNode, FileConnection } from '../../types/dna';
 
@@ -34,6 +37,8 @@ export const BrainScene: React.FC<BrainSceneProps> = ({
           antialias: true,
           alpha: true,
           powerPreference: 'high-performance',
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.2,
         }}
       >
         {/* Camera */}
@@ -45,36 +50,68 @@ export const BrainScene: React.FC<BrainSceneProps> = ({
           far={1000}
         />
 
-        {/* Lights */}
-        <ambientLight intensity={0.2} />
+        {/* Lights - Enhanced for better visual quality */}
+        <ambientLight intensity={0.3} color="#0a1929" />
+        
+        {/* Key light - Cyan */}
         <pointLight
           position={[10, 10, 10]}
-          intensity={0.5}
+          intensity={1.5}
           color="#00f0ff"
+          distance={50}
+          decay={2}
         />
+        
+        {/* Fill light - Magenta */}
         <pointLight
           position={[-10, -10, -10]}
-          intensity={0.3}
+          intensity={0.8}
           color="#ff00ff"
+          distance={50}
+          decay={2}
+        />
+        
+        {/* Back light - Accent */}
+        <pointLight
+          position={[0, -5, -10]}
+          intensity={1.0}
+          color="#00ff9f"
+          distance={40}
+          decay={2}
         />
 
         {/* Directional rim light */}
         <directionalLight
           position={[0, 5, 5]}
-          intensity={0.5}
+          intensity={0.8}
           color="#00ff9f"
+          castShadow={false}
+        />
+        
+        {/* Spot light for dramatic effect */}
+        <spotLight
+          position={[0, 10, 0]}
+          angle={0.5}
+          penumbra={0.5}
+          intensity={0.5}
+          color="#ffffff"
+          distance={30}
+          decay={2}
         />
 
-        {/* Stars background */}
+        {/* Stars background - Enhanced */}
         <Stars
           radius={100}
           depth={50}
-          count={5000}
-          factor={4}
-          saturation={0.5}
+          count={8000}
+          factor={5}
+          saturation={0.6}
           fade
-          speed={1}
+          speed={1.5}
         />
+        
+        {/* Environment for better reflections */}
+        <Environment preset="night" />
 
         {/* The Neural Brain */}
         <NeuralBrain
@@ -104,7 +141,29 @@ export const BrainScene: React.FC<BrainSceneProps> = ({
           maxDistance={15}
           autoRotate={brainState.autoRotate}
           autoRotateSpeed={0.5}
+          enableDamping
+          dampingFactor={0.05}
         />
+        
+        {/* Post-processing effects */}
+        <EffectComposer>
+          {/* Bloom for glowing effects */}
+          <Bloom
+            intensity={brainState.illuminationLevel * 1.5 + 0.3}
+            luminanceThreshold={0.2}
+            luminanceSmoothing={0.9}
+            mipmapBlur
+            radius={0.8}
+          />
+          
+          {/* Chromatic aberration for cyberpunk feel */}
+          <ChromaticAberration
+            blendFunction={BlendFunction.NORMAL}
+            offset={[0.0015, 0.0015]}
+            radialModulation={true}
+            modulationOffset={0.5}
+          />
+        </EffectComposer>
       </Canvas>
 
       {/* Illumination level indicator */}
