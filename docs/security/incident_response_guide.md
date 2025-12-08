@@ -252,26 +252,40 @@ curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
 # Email
 python3 << EOF
 import smtplib
+import os
 from email.message import EmailMessage
 
+severity = os.getenv('SEVERITY', 'UNKNOWN')
+description = os.getenv('DESCRIPTION', 'No description provided')
+smtp_password = os.getenv('SMTP_PASSWORD')
+
+if not smtp_password:
+    print("Warning: SMTP_PASSWORD not set, skipping email")
+    exit(0)
+
 msg = EmailMessage()
-msg['Subject'] = f'🚨 Security Incident - {os.environ["SEVERITY"]}'
+msg['Subject'] = f'🚨 Security Incident - {severity}'
 msg['From'] = 'security@iangelai.com'
 msg['To'] = 'irt@iangelai.com'
-msg.set_content(os.environ["DESCRIPTION"])
+msg.set_content(description)
 
 with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
     smtp.starttls()
-    smtp.login('security@iangelai.com', os.environ['SMTP_PASSWORD'])
+    smtp.login('security@iangelai.com', smtp_password)
     smtp.send_message(msg)
 EOF
 
 # SMS (via Twilio)
-curl -X POST https://api.twilio.com/2010-04-01/Accounts/$TWILIO_SID/Messages.json \
-  --data-urlencode "Body=SECURITY INCIDENT ${SEVERITY}: ${DESCRIPTION}" \
-  --data-urlencode "From=+1XXX" \
-  --data-urlencode "To=+1XXX" \
-  -u $TWILIO_SID:$TWILIO_TOKEN
+# Ensure environment variables are set: TWILIO_SID, TWILIO_TOKEN
+if [ -z "$TWILIO_SID" ] || [ -z "$TWILIO_TOKEN" ]; then
+  echo "Warning: TWILIO_SID or TWILIO_TOKEN not set, skipping SMS"
+else
+  curl -X POST https://api.twilio.com/2010-04-01/Accounts/$TWILIO_SID/Messages.json \
+    --data-urlencode "Body=SECURITY INCIDENT ${SEVERITY}: ${DESCRIPTION}" \
+    --data-urlencode "From=+1XXX" \
+    --data-urlencode "To=+1XXX" \
+    -u $TWILIO_SID:$TWILIO_TOKEN
+fi
 ```
 
 ---

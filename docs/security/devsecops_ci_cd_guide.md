@@ -375,14 +375,14 @@ jobs:
         sleep 30  # Wait for services to be ready
 
     - name: ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.12.0
+      uses: zaproxy/action-baseline@v0.12.0  # Pinned version for reproducibility
       with:
         target: 'http://localhost:5173'
         rules_file_name: '.zap/rules.tsv'
         cmd_options: '-a'
 
     - name: ZAP Full Scan
-      uses: zaproxy/action-full-scan@v0.10.0
+      uses: zaproxy/action-full-scan@v0.10.0  # Pinned version for reproducibility
       with:
         target: 'http://localhost:5173'
         rules_file_name: '.zap/rules.tsv'

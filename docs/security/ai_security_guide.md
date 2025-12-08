@@ -124,8 +124,8 @@ class PIIAnonymizer:
         
         return anonymized
     
-    def validate_no_pii(self, text: str) -> bool:
-        """Check if text contains PII."""
+    def contains_no_pii(self, text: str) -> bool:
+        """Check if text contains no PII. Returns True if no PII found."""
         for pattern in self.PATTERNS.values():
             if re.search(pattern, text):
                 return False
@@ -466,16 +466,17 @@ if not result['safe_to_display']:
 ```python
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from fastapi import Request
 
 limiter = Limiter(key_func=get_remote_address)
 
 @app.post("/api/ai/analyze")
 @limiter.limit("10/minute")  # Prevent model extraction attacks
-async def analyze_code(request: CodeAnalysisRequest):
+async def analyze_code(data: CodeAnalysisRequest, request: Request):
     """AI-powered code analysis endpoint."""
     
-    # Validate input
-    validated = CodeAnalysisRequest(**request.dict())
+    # Validate input (already validated by Pydantic)
+    validated = data
     
     # Run analysis (with timeout to prevent DoS)
     try:
@@ -648,7 +649,7 @@ async def predict(request: PredictionRequest):
     
     try:
         # Validate input
-        validated = PredictionRequest(**request.dict())
+        validated = data
         
         # Run prediction
         result = model.predict(validated.data)
