@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PerspectiveCamera, Stars, Environment } from '@react-three/drei';
+import { OrbitControls, PerspectiveCamera, Stars } from '@react-three/drei';
 import { NeuralBrain } from './NeuralBrain';
 import { DNAHelix } from '../DNAHelix';
 import { EffectComposer, Bloom, ChromaticAberration } from '@react-three/postprocessing';
@@ -109,9 +109,6 @@ export const BrainScene: React.FC<BrainSceneProps> = ({
           fade
           speed={1.5}
         />
-        
-        {/* Environment for better reflections */}
-        <Environment preset="night" />
 
         {/* The Neural Brain */}
         <NeuralBrain

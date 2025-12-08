@@ -9,7 +9,7 @@
 
 export const brainVertexShader = `
   varying vec3 vNormal;
-  varying vec3 vPosition;
+  varying vec3 vViewPosition;
   varying vec2 vUv;
   
   uniform float time;
@@ -17,7 +17,6 @@ export const brainVertexShader = `
   
   void main() {
     vNormal = normalize(normalMatrix * normal);
-    vPosition = position;
     vUv = uv;
     
     // Add subtle vertex displacement for "breathing" effect
@@ -28,7 +27,9 @@ export const brainVertexShader = `
                          0.05 * pulseIntensity;
     newPosition += normal * displacement;
     
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
@@ -37,21 +38,20 @@ export const brainFragmentShader = `
   uniform float illuminationLevel;
   uniform vec3 primaryColor;
   uniform vec3 accentColor;
-  uniform vec3 cameraPosition;
   
   varying vec3 vNormal;
-  varying vec3 vPosition;
+  varying vec3 vViewPosition;
   varying vec2 vUv;
   
   void main() {
     // Calculate fresnel effect (rim glow)
-    vec3 viewDirection = normalize(cameraPosition - vPosition);
+    vec3 viewDirection = normalize(vViewPosition);
     float fresnel = pow(1.0 - abs(dot(viewDirection, vNormal)), 3.0);
     
     // Animated energy flow pattern
-    float pattern = sin(vPosition.x * 3.0 + time) * 
-                    sin(vPosition.y * 3.0 + time * 0.7) * 
-                    sin(vPosition.z * 3.0 + time * 0.5);
+    float pattern = sin(vViewPosition.x * 3.0 + time) * 
+                    sin(vViewPosition.y * 3.0 + time * 0.7) * 
+                    sin(vViewPosition.z * 3.0 + time * 0.5);
     pattern = (pattern + 1.0) * 0.5; // Normalize to 0-1
     
     // Mix colors based on illumination and pattern
@@ -64,10 +64,6 @@ export const brainFragmentShader = `
     // Add pulsing glow
     float pulse = sin(time * 2.0) * 0.5 + 0.5;
     finalColor += accentColor * fresnel * illuminationLevel * pulse * 0.3;
-    
-    // Add depth-based darkening for more volume
-    float depth = 1.0 - (gl_FragCoord.z / gl_FragCoord.w) * 0.001;
-    finalColor *= clamp(depth, 0.7, 1.0);
     
     gl_FragColor = vec4(finalColor, 0.85 + fresnel * 0.15);
   }

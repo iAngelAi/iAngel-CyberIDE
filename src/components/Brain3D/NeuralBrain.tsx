@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import type { NeuralRegion } from '../../types';
@@ -25,7 +25,6 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
   const groupRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   const shaderMaterialRef = useRef<THREE.ShaderMaterial>(null);
-  const { camera } = useThree();
 
   // Enhanced shader material with custom effects
   const customShaderMaterial = useMemo(() => {
@@ -35,15 +34,14 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
         illuminationLevel: { value: illuminationLevel },
         pulseIntensity: { value: illuminationLevel },
         primaryColor: { value: new THREE.Color('#00f0ff') },
-        accentColor: { value: new THREE.Color('#ff00ff') },
-        cameraPosition: { value: camera.position }
+        accentColor: { value: new THREE.Color('#ff00ff') }
       },
       vertexShader: brainVertexShader,
       fragmentShader: brainFragmentShader,
       transparent: true,
       side: THREE.DoubleSide,
     });
-  }, [camera.position]);
+  }, []);
 
   // Auto-rotation animation
   useFrame((state, delta) => {
@@ -56,7 +54,6 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
       shaderMaterialRef.current.uniforms.time.value = state.clock.elapsedTime;
       shaderMaterialRef.current.uniforms.illuminationLevel.value = illuminationLevel;
       shaderMaterialRef.current.uniforms.pulseIntensity.value = illuminationLevel;
-      shaderMaterialRef.current.uniforms.cameraPosition.value.copy(camera.position);
     }
 
     // Pulsing effect based on illumination
