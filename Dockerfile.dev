@@ -1,0 +1,90 @@
+# =============================================================================
+# CyberIDE Development Dockerfile - Unified Build
+# =============================================================================
+# Purpose: Provide isolated, reproducible development environment
+# Features:
+#   - Locked dependencies (no version drift)
+#   - Environment pollution prevention
+#   - Multi-platform support (AMD64/ARM64)
+#   - Development tools included
+#   - Hot reload capabilities
+# =============================================================================
+
+# =============================================================================
+# STAGE 1: Base with Python and Node.js
+# =============================================================================
+FROM nikolaik/python-nodejs:python3.11-nodejs20-slim AS base
+
+# Prevent Python from writing pyc files and buffering stdout/stderr
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    NODE_ENV=development \
+    NPM_CONFIG_LOGLEVEL=warn
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        git \
+        libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# =============================================================================
+# STAGE 2: Dependencies Installation
+# =============================================================================
+FROM base AS deps
+
+# Copy dependency files ONLY (layer caching optimization)
+COPY requirements.txt requirements-lock.txt package.json package-lock.json ./
+
+# Install Python dependencies from lock file
+RUN pip install --no-cache-dir -r requirements-lock.txt && \
+    python -m pip check
+
+# Install Node dependencies from lock file (npm ci ensures exact versions)
+RUN npm ci --only=production=false
+
+# =============================================================================
+# STAGE 3: Development Environment (Final)
+# =============================================================================
+FROM base AS development
+
+# Copy Python and Node dependencies from builder
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+COPY --from=deps /app/node_modules ./node_modules
+
+# Create non-root user for security
+RUN groupadd -r cyberide && \
+    useradd -r -g cyberide -u 1001 -m -s /bin/bash cyberide && \
+    chown -R cyberide:cyberide /app
+
+# Copy application code
+COPY --chown=cyberide:cyberide . .
+
+# Switch to non-root user
+USER cyberide
+
+# Expose ports
+EXPOSE 5173 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5173/ || curl -f http://localhost:8000/ || exit 1
+
+# Default command (can be overridden)
+CMD ["bash"]
+
+# =============================================================================
+# Usage Examples:
+# =============================================================================
+# Build: docker build -f Dockerfile.dev -t cyberide:dev .
+# Run (frontend): docker run -p 5173:5173 -v $(pwd):/app cyberide:dev npm run dev
+# Run (backend): docker run -p 8000:8000 -v $(pwd):/app cyberide:dev python3 neural_core.py
+# Interactive: docker run -it -v $(pwd):/app cyberide:dev bash
+# =============================================================================

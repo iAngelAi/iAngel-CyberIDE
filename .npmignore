@@ -1,0 +1,119 @@
+# =============================================================================
+# .npmignore - CyberIDE
+# Exclude files from npm package publishing
+# =============================================================================
+
+# Source control
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+nginx.conf
+
+# Development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+tests/
+test/
+__tests__/
+*.test.ts
+*.test.tsx
+*.test.js
+*.spec.ts
+*.spec.tsx
+*.spec.js
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+vitest.config.ts
+pytest.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+MANIFEST
+requirements*.txt
+pyproject.toml
+neural_core.py
+start_neural_core.py
+validate_neural_core.py
+
+# Backend code (if publishing frontend only)
+backend/
+neural/
+neural_cli/
+
+# Documentation (keep README.md)
+docs/
+*.md
+!README.md
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build artifacts (source files)
+src/
+tsconfig*.json
+vite.config.ts
+postcss.config.js
+tailwind.config.js
+eslint.config.js
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# IDE specific
+.claude/
+neural_status.json
+type_assertion_audit.md
+type_assertion_fixes.json
+
+# Dependencies (users should install their own)
+node_modules/
+
+# Lock files (users might want different package manager)
+# Comment these out if you want to enforce exact versions
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
