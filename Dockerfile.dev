@@ -1,5 +1,5 @@
 # =============================================================================
-# CyberIDE Development Dockerfile - Multi-Stage Build
+# CyberIDE Development Dockerfile - Unified Build
 # =============================================================================
 # Purpose: Provide isolated, reproducible development environment
 # Features:
@@ -11,15 +11,17 @@
 # =============================================================================
 
 # =============================================================================
-# STAGE 1: Python Base with Dependencies
+# STAGE 1: Base with Python and Node.js
 # =============================================================================
-FROM python:3.11-slim AS python-base
+FROM nikolaik/python-nodejs:python3.11-nodejs20-slim AS base
 
 # Prevent Python from writing pyc files and buffering stdout/stderr
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    NODE_ENV=development \
+    NPM_CONFIG_LOGLEVEL=warn
 
 WORKDIR /app
 
@@ -33,57 +35,29 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # =============================================================================
-# STAGE 2: Python Dependencies Installation
+# STAGE 2: Dependencies Installation
 # =============================================================================
-FROM python-base AS python-deps
+FROM base AS deps
 
 # Copy dependency files ONLY (layer caching optimization)
-COPY requirements.txt requirements-lock.txt ./
+COPY requirements.txt requirements-lock.txt package.json package-lock.json ./
 
 # Install Python dependencies from lock file
-# Using --require-hashes would be ideal for production, but requires hash generation
-RUN pip install --no-cache-dir -r requirements-lock.txt
-
-# Verify no broken dependencies
-RUN python -m pip check
-
-# =============================================================================
-# STAGE 3: Node.js Base
-# =============================================================================
-FROM node:20-slim AS node-base
-
-ENV NODE_ENV=development \
-    NPM_CONFIG_LOGLEVEL=warn
-
-WORKDIR /app
-
-# =============================================================================
-# STAGE 4: Node.js Dependencies Installation
-# =============================================================================
-FROM node-base AS node-deps
-
-# Copy package files ONLY (layer caching)
-COPY package.json package-lock.json ./
+RUN pip install --no-cache-dir -r requirements-lock.txt && \
+    python -m pip check
 
 # Install Node dependencies from lock file (npm ci ensures exact versions)
 RUN npm ci --only=production=false
 
 # =============================================================================
-# STAGE 5: Development Environment (Final)
+# STAGE 3: Development Environment (Final)
 # =============================================================================
-FROM python-base AS development
+FROM base AS development
 
-# Install Node.js in Python base image
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-    apt-get install -y --no-install-recommends nodejs && \
-    rm -rf /var/lib/apt/lists/*
-
-# Copy Python dependencies from builder
-COPY --from=python-deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=python-deps /usr/local/bin /usr/local/bin
-
-# Copy Node dependencies from builder
-COPY --from=node-deps /app/node_modules ./node_modules
+# Copy Python and Node dependencies from builder
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+COPY --from=deps /app/node_modules ./node_modules
 
 # Create non-root user for security
 RUN groupadd -r cyberide && \

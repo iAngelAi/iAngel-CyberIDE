@@ -99,11 +99,19 @@ class EnvironmentValidator:
             print_success(f"Python version: {version}")
             
             # Check if version is in acceptable range (3.10-3.12)
-            version_parts = version.split()[1].split('.')
-            major, minor = int(version_parts[0]), int(version_parts[1])
-            if not (major == 3 and 10 <= minor < 13):
-                print_warning(f"Python version {major}.{minor} is outside recommended range (3.10-3.12)")
-                self.warnings.append(f"Python version {major}.{minor} not optimal")
+            version_parts = version.split()
+            if len(version_parts) >= 2:
+                version_numbers = version_parts[1].split('.')
+                if len(version_numbers) >= 2:
+                    try:
+                        major, minor = int(version_numbers[0]), int(version_numbers[1])
+                        if not (major == 3 and 10 <= minor < 13):
+                            print_warning(f"Python version {major}.{minor} is outside recommended range (3.10-3.12)")
+                            self.warnings.append(f"Python version {major}.{minor} not optimal")
+                    except ValueError:
+                        print_warning(f"Could not parse Python version: {version}")
+            else:
+                print_warning(f"Unexpected Python version format: {version}")
         except Exception as e:
             print_error(f"Failed to check Python version: {e}")
             self.errors.append("Python version check failed")
@@ -157,10 +165,18 @@ class EnvironmentValidator:
             print_success(f"Node.js version: {version}")
             
             # Check if LTS (v20.x)
-            major_version = int(version.lstrip('v').split('.')[0])
-            if major_version < 20:
-                print_warning(f"Node.js v{major_version} is below recommended v20 (LTS)")
-                self.warnings.append(f"Node.js v{major_version} below recommended")
+            if version and version.startswith('v'):
+                version_numbers = version.lstrip('v').split('.')
+                if version_numbers and version_numbers[0].isdigit():
+                    try:
+                        major_version = int(version_numbers[0])
+                        if major_version < 20:
+                            print_warning(f"Node.js v{major_version} is below recommended v20 (LTS)")
+                            self.warnings.append(f"Node.js v{major_version} below recommended")
+                    except ValueError:
+                        print_warning(f"Could not parse Node.js version: {version}")
+                else:
+                    print_warning(f"Unexpected Node.js version format: {version}")
         except Exception as e:
             print_error(f"Failed to check Node.js version: {e}")
             self.errors.append("Node.js version check failed")
