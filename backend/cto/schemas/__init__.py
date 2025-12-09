@@ -1,2 +1,23 @@
+"""Pydantic schemas for CTO module."""
+
+from .task import (
+    TaskType,
+    TaskPriority,
+    TaskStatus,
+    LLMConfig,
+    AgentConfig,
+    TaskRequest,
+    TaskResult,
+)
+
+__all__ = [
+    "TaskType",
+    "TaskPriority",
+    "TaskStatus",
+    "LLMConfig",
+    "AgentConfig",
+    "TaskRequest",
+    "TaskResult",
+]
 # Schemas Module
 """Sous-module schémas du CTO."""
