@@ -1,0 +1,116 @@
+# =============================================================================
+# CyberIDE Development Dockerfile - Multi-Stage Build
+# =============================================================================
+# Purpose: Provide isolated, reproducible development environment
+# Features:
+#   - Locked dependencies (no version drift)
+#   - Environment pollution prevention
+#   - Multi-platform support (AMD64/ARM64)
+#   - Development tools included
+#   - Hot reload capabilities
+# =============================================================================
+
+# =============================================================================
+# STAGE 1: Python Base with Dependencies
+# =============================================================================
+FROM python:3.11-slim AS python-base
+
+# Prevent Python from writing pyc files and buffering stdout/stderr
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        git \
+        libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# =============================================================================
+# STAGE 2: Python Dependencies Installation
+# =============================================================================
+FROM python-base AS python-deps
+
+# Copy dependency files ONLY (layer caching optimization)
+COPY requirements.txt requirements-lock.txt ./
+
+# Install Python dependencies from lock file
+# Using --require-hashes would be ideal for production, but requires hash generation
+RUN pip install --no-cache-dir -r requirements-lock.txt
+
+# Verify no broken dependencies
+RUN python -m pip check
+
+# =============================================================================
+# STAGE 3: Node.js Base
+# =============================================================================
+FROM node:20-slim AS node-base
+
+ENV NODE_ENV=development \
+    NPM_CONFIG_LOGLEVEL=warn
+
+WORKDIR /app
+
+# =============================================================================
+# STAGE 4: Node.js Dependencies Installation
+# =============================================================================
+FROM node-base AS node-deps
+
+# Copy package files ONLY (layer caching)
+COPY package.json package-lock.json ./
+
+# Install Node dependencies from lock file (npm ci ensures exact versions)
+RUN npm ci --only=production=false
+
+# =============================================================================
+# STAGE 5: Development Environment (Final)
+# =============================================================================
+FROM python-base AS development
+
+# Install Node.js in Python base image
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy Python dependencies from builder
+COPY --from=python-deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=python-deps /usr/local/bin /usr/local/bin
+
+# Copy Node dependencies from builder
+COPY --from=node-deps /app/node_modules ./node_modules
+
+# Create non-root user for security
+RUN groupadd -r cyberide && \
+    useradd -r -g cyberide -u 1001 -m -s /bin/bash cyberide && \
+    chown -R cyberide:cyberide /app
+
+# Copy application code
+COPY --chown=cyberide:cyberide . .
+
+# Switch to non-root user
+USER cyberide
+
+# Expose ports
+EXPOSE 5173 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5173/ || curl -f http://localhost:8000/ || exit 1
+
+# Default command (can be overridden)
+CMD ["bash"]
+
+# =============================================================================
+# Usage Examples:
+# =============================================================================
+# Build: docker build -f Dockerfile.dev -t cyberide:dev .
+# Run (frontend): docker run -p 5173:5173 -v $(pwd):/app cyberide:dev npm run dev
+# Run (backend): docker run -p 8000:8000 -v $(pwd):/app cyberide:dev python3 neural_core.py
+# Interactive: docker run -it -v $(pwd):/app cyberide:dev bash
+# =============================================================================

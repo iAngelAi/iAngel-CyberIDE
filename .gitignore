@@ -169,14 +169,17 @@ type_assertion_fixes.json
 .claude/settings.local.json
 
 # ═══════════════════════════════════════════════════════════════════════════
-# OPTIONAL: KEEP THESE IF YOU WANT THEM IN REPO
-# Uncomment to ignore:
+# LOCK FILES - KEEP THESE FOR REPRODUCIBILITY
 # ═══════════════════════════════════════════════════════════════════════════
+# Lock files are TRACKED to ensure reproducible builds and prevent dependency conflicts
+# DO NOT ignore: package-lock.json, requirements-lock.txt
+# These files are critical for:
+#   - Reproducible builds across environments
+#   - Prevention of dependency version drift
+#   - Security auditing and compliance
+#   - CI/CD pipeline consistency
 
-# # Lock files (usually kept for reproducibility)
-# package-lock.json
-# pnpm-lock.yaml
-# yarn.lock
-
-# # Configuration that might be personal
+# ═══════════════════════════════════════════════════════════════════════════
+# OPTIONAL: Configuration that might be personal
+# ═══════════════════════════════════════════════════════════════════════════
 # .claude/CLAUDE.md
