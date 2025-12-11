@@ -6,7 +6,7 @@ This module validates:
 - File change → Test run → Status update → WebSocket broadcast flow
 - Multiple WebSocket clients receiving broadcasts simultaneously
 - MetricCalculator → NeuralStatus → WebSocket flow
-- TestAnalyzer → FileWatcher integration
+- PytestAnalyzer → FileWatcher integration
 - Full project health monitoring cycle
 - Error propagation across components
 """
@@ -23,13 +23,13 @@ from neural_cli.main import app, neural_core, update_neural_status
 from neural_cli.models import (
     NeuralStatus,
     FileChangeEvent,
-    TestResult,
+    PytestRunResult,
     BrainRegion,
     RegionStatus,
     WebSocketMessage
 )
 from neural_cli.metric_calculator import MetricCalculator
-from neural_cli.test_analyzer import TestAnalyzer
+from neural_cli.test_analyzer import PytestAnalyzer
 from neural_cli.file_watcher import FileWatcher
 
 
@@ -156,13 +156,13 @@ class TestMetricCalculatorIntegration:
         assert status_with_docs.illumination > status_without_docs.illumination
 
 
-class TestTestAnalyzerIntegration:
-    """Integration tests for TestAnalyzer with real test execution."""
+class TestPytestAnalyzerIntegration:
+    """Integration tests for PytestAnalyzer with real test execution."""
 
     @pytest.mark.slow
     def test_run_tests_on_real_project(self, full_project):
         """Test running pytest on actual project."""
-        analyzer = TestAnalyzer(str(full_project))
+        analyzer = PytestAnalyzer(str(full_project))
 
         # This will actually run pytest
         result = analyzer.run_tests(verbose=False)
@@ -174,7 +174,7 @@ class TestTestAnalyzerIntegration:
 
     def test_should_run_tests_for_various_files(self, full_project):
         """Test should_run_tests logic with real project paths."""
-        analyzer = TestAnalyzer(str(full_project))
+        analyzer = PytestAnalyzer(str(full_project))
 
         # Should run for source files
         assert analyzer.should_run_tests(str(full_project / "src" / "main.ts")) is True
@@ -189,8 +189,8 @@ class TestTestAnalyzerIntegration:
         assert analyzer.should_run_tests(str(full_project / "README.md")) is False
 
     def test_get_test_files_finds_all_tests(self, full_project):
-        """Test TestAnalyzer finds all test files."""
-        analyzer = TestAnalyzer(str(full_project))
+        """Test PytestAnalyzer finds all test files."""
+        analyzer = PytestAnalyzer(str(full_project))
 
         test_files = analyzer.get_test_files()
 
@@ -278,7 +278,7 @@ class TestEndToEndWorkflows:
         neural_core.metric_calculator = calculator
 
         # Create test result
-        test_result = TestResult(
+        test_result = PytestRunResult(
             total_tests=10,
             passed=10,
             failed=0,
@@ -302,7 +302,7 @@ class TestEndToEndWorkflows:
     def test_file_change_to_status_update_flow(self, full_project):
         """Test flow: file change → should run tests → update status."""
         # Initialize components
-        analyzer = TestAnalyzer(str(full_project))
+        analyzer = PytestAnalyzer(str(full_project))
         calculator = MetricCalculator(str(full_project))
 
         # Simulate file change
@@ -373,7 +373,7 @@ class TestMultiComponentIntegration:
         """Test all components can be initialized together."""
         # Initialize all components
         calculator = MetricCalculator(str(full_project))
-        analyzer = TestAnalyzer(str(full_project))
+        analyzer = PytestAnalyzer(str(full_project))
 
         callback = Mock()
         watcher = FileWatcher(str(full_project), callback)
@@ -393,7 +393,7 @@ class TestMultiComponentIntegration:
     def test_full_project_health_check(self, full_project):
         """Test complete project health can be assessed."""
         calculator = MetricCalculator(str(full_project))
-        analyzer = TestAnalyzer(str(full_project))
+        analyzer = PytestAnalyzer(str(full_project))
 
         # Get file counts
         file_counts = calculator.count_files_by_region()
@@ -510,7 +510,7 @@ class TestErrorPropagation:
         file_counts = calculator.count_files_by_region()
         assert file_counts == {"frontend": 0, "backend": 0, "tests": 0}
 
-        analyzer = TestAnalyzer(invalid_path)
+        analyzer = PytestAnalyzer(invalid_path)
         test_files = analyzer.get_test_files()
         assert test_files == []
 
@@ -531,7 +531,7 @@ class TestErrorPropagation:
 
     def test_test_run_failure_doesnt_crash_system(self, full_project):
         """Test test run failure is handled gracefully."""
-        analyzer = TestAnalyzer(str(full_project))
+        analyzer = PytestAnalyzer(str(full_project))
 
         # Simulate pytest failure by mocking
         with patch('subprocess.run', side_effect=Exception("Pytest crashed")):

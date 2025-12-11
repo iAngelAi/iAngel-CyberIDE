@@ -12,8 +12,10 @@ import {
 } from './types/backend';
 import type { BackendWebSocketMessage } from './types/backend';
 import type { SourceFileNode, TestFileNode, FileConnection } from './types/dna';
-import { Brain, Activity, Zap, Wifi, WifiOff, AlertCircle, Server } from 'lucide-react';
+import { Brain, Activity, Zap, Wifi, WifiOff, AlertCircle, Server, Terminal } from 'lucide-react';
 import { GitDashboard } from './components/GitDashboard';
+import { DebugConsole } from './components/DebugConsole';
+import type { LogEntry } from './components/DebugConsole';
 import type { GitDashboardData } from './types/git';
 
 /**
@@ -32,6 +34,23 @@ function App() {
   const [connections, setConnections] = useState<FileConnection[]>([]);
   const [resonatingFiles, setResonatingFiles] = useState<string[]>([]);
 
+  // Debug Console State
+  const [showDebugConsole, setShowDebugConsole] = useState(false);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+
+  const addLog = useCallback((message: string, source: string = 'System', level: LogEntry['level'] = 'info') => {
+    setLogs(prev => {
+      const newLogs = [...prev, {
+        id: crypto.randomUUID(),
+        timestamp: new Date(),
+        level,
+        message,
+        source
+      }];
+      return newLogs.slice(-200); // Keep last 200 logs
+    });
+  }, []);
+
   // Initialize brain state management
   const {
     brainState,
@@ -44,23 +63,32 @@ function App() {
   const handleWebSocketMessage = useCallback(
     (message: BackendWebSocketMessage) => {
       console.log('[App] Received WebSocket message:', message.type);
+      addLog(`Received message: ${message.type}`, 'WebSocket', 'info');
 
       if (isNeuralStatusMessage(message)) {
         // Update brain state with backend data
         updateFromBackend(message.data);
         setIsInitialized(true);
+        addLog('Neural status updated', 'Brain', 'success');
       } else if (isFileChangeMessage(message)) {
         // Show notification for file changes
         const { file_path, event_type } = message.data;
         setLastNotification(`File ${event_type}: ${file_path}`);
+        addLog(`File ${event_type}: ${file_path}`, 'FileWatcher', 'info');
         setTimeout(() => setLastNotification(null), 5000);
       } else if (isTestResultMessage(message)) {
         // Show notification for test results
         const { passed, failed, total_tests } = message.data;
+        const msg = failed > 0 
+          ? `Tests: ${passed}/${total_tests} passed, ${failed} failed`
+          : `All ${total_tests} tests passed!`;
+        
         if (failed > 0) {
-          setLastNotification(`Tests: ${passed}/${total_tests} passed, ${failed} failed`);
+          setLastNotification(msg);
+          addLog(msg, 'TestRunner', 'error');
         } else {
-          setLastNotification(`All ${total_tests} tests passed!`);
+          setLastNotification(msg);
+          addLog(msg, 'TestRunner', 'success');
         }
         setTimeout(() => setLastNotification(null), 5000);
       } else if (isDiagnosticMessage(message)) {
@@ -68,6 +96,8 @@ function App() {
         const { region, message: diagMessage, level } = message.data;
         setRegionError(region, `${level}: ${diagMessage}`);
         setLastNotification(`${level} in ${region}: ${diagMessage}`);
+        const logSeverity = level === 'ALERT' ? 'error' : 'warn';
+        addLog(`${level} in ${region}: ${diagMessage}`, 'Diagnostic', logSeverity);
         setTimeout(() => setLastNotification(null), 8000);
       } else if (isFileMappingMessage(message)) {
         // Update file mapping data for DNA Helix
@@ -107,11 +137,13 @@ function App() {
         setTestFiles(newTestFiles);
         setConnections(newConnections);
 
-        setLastNotification(`File mapping updated: ${newSourceFiles.length} sources, ${newTestFiles.length} tests`);
+        const msg = `File mapping updated: ${newSourceFiles.length} sources, ${newTestFiles.length} tests`;
+        setLastNotification(msg);
+        addLog(msg, 'Mapper', 'info');
         setTimeout(() => setLastNotification(null), 3000);
       } else if (isGitPulseMessage(message)) {
         // Handle Git pulse events
-        const { author, message: commitMsg, files_changed } = message.data;
+        const { hash, author, message: commitMsg, intensity, files_changed } = message.data;
 
         // Mise à jour des fichiers résonants basée sur les fichiers modifiés
         const newResonatingFiles = sourceFiles
@@ -120,14 +152,16 @@ function App() {
 
         setResonatingFiles(newResonatingFiles);
 
-        setLastNotification(`Git Pulse: ${commitMsg.slice(0, 50)} by ${author}`);
+        const notification = `Git Pulse: ${commitMsg.slice(0, 50)} by ${author} (${intensity.toFixed(1)})`;
+        setLastNotification(notification);
+        addLog(`${notification} [${hash.slice(0, 7)}]`, 'GitPulse', 'info');
         setTimeout(() => {
           // Réinitialiser les fichiers résonants après 3 secondes
           setResonatingFiles([]);
         }, 5000);
       }
     },
-    [updateFromBackend, setRegionError]
+    [updateFromBackend, setRegionError, addLog, sourceFiles]
   );
 
   // Initialize WebSocket connection
@@ -137,11 +171,13 @@ function App() {
       onMessage: handleWebSocketMessage,
       onConnect: () => {
         console.log('[App] WebSocket connected, requesting initial status');
+        addLog('WebSocket connected', 'Network', 'success');
         // Request initial status after connection
         setTimeout(() => requestStatusRefresh(), 500);
       },
       onDisconnect: () => {
         console.log('[App] WebSocket disconnected');
+        addLog('WebSocket disconnected', 'Network', 'warn');
         setIsInitialized(false);
       },
     },
@@ -242,6 +278,23 @@ function App() {
             >
               <Server className="w-4 h-4" />
               {showGitDashboard ? 'HIDE GIT' : 'GIT DASHBOARD'}
+            </button>
+
+            {/* Debug Console Toggle */}
+            <button
+              onClick={() => setShowDebugConsole(!showDebugConsole)}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-sm
+                transition-all duration-300
+                ${
+                  showDebugConsole
+                    ? 'bg-cyber-primary/20 text-cyber-primary'
+                    : 'cyber-border bg-cyber-dark text-white/70 hover:bg-cyber-primary/10'
+                }
+              `}
+            >
+              <Terminal className="w-4 h-4" />
+              {showDebugConsole ? 'HIDE LOGS' : 'DEBUG LOGS'}
             </button>
 
             {/* Manual Initialize (Demo Mode) */}
@@ -347,6 +400,14 @@ function App() {
           <GitDashboard fetchDashboardData={fetchGitDashboardData} />
         </div>
       )}
+
+      {/* Debug Console */}
+      <DebugConsole
+        logs={logs}
+        isOpen={showDebugConsole}
+        onClose={() => setShowDebugConsole(false)}
+        onClear={() => setLogs([])}
+      />
     </div>
   );
 }

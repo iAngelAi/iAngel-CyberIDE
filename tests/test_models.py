@@ -24,7 +24,7 @@ from neural_cli.models import (
     DiagnosticLevel,
     RegionStatus,
     FileChangeEvent,
-    TestResult,
+    PytestRunResult,
     WebSocketMessage,
     ProjectMetrics,
 )
@@ -304,12 +304,12 @@ class TestFileChangeEvent:
             assert event.event_type == event_type
 
 
-class TestTestResult:
-    """Test TestResult model validation."""
+class TestPytestRunResult:
+    """Test PytestRunResult model validation."""
 
     def test_valid_test_result(self):
         """Valid test result should be accepted."""
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=100,
             passed=85,
             failed=15,
@@ -325,7 +325,7 @@ class TestTestResult:
 
     def test_default_values(self):
         """Test result should have correct defaults."""
-        result = TestResult()
+        result = PytestRunResult()
 
         assert result.total_tests == 0
         assert result.passed == 0
@@ -338,7 +338,7 @@ class TestTestResult:
 
     def test_failed_tests_list(self):
         """Failed tests list should be accepted."""
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=10,
             passed=8,
             failed=2,
@@ -352,7 +352,7 @@ class TestTestResult:
 
     def test_auto_timestamp(self):
         """Test result should have auto-generated timestamp."""
-        result = TestResult()
+        result = PytestRunResult()
         assert result.timestamp is not None
         assert isinstance(result.timestamp, datetime)
 

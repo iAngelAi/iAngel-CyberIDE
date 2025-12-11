@@ -14,10 +14,10 @@ from typing import Dict, Optional, List
 from datetime import datetime, timezone
 import re
 
-from .models import TestResult
+from .models import PytestRunResult
 
 
-class TestAnalyzer:
+class PytestAnalyzer:
     """
     Analyzes test results and coverage for the project.
 
@@ -41,7 +41,7 @@ class TestAnalyzer:
         self,
         path: Optional[str] = None,
         verbose: bool = True
-    ) -> TestResult:
+    ) -> PytestRunResult:
         """
         Run pytest tests and collect results.
 
@@ -50,7 +50,7 @@ class TestAnalyzer:
             verbose: Whether to show verbose output
 
         Returns:
-            TestResult object with test metrics and coverage
+            PytestRunResult object with test metrics and coverage
         """
         # Build pytest command
         cmd = ["pytest"]
@@ -62,7 +62,7 @@ class TestAnalyzer:
             cmd.append(str(self.tests_dir))
         else:
             # No tests directory - return empty result
-            return TestResult(
+            return PytestRunResult(
                 total_tests=0,
                 passed=0,
                 failed=0,
@@ -105,7 +105,7 @@ class TestAnalyzer:
 
         except subprocess.TimeoutExpired:
             print("⚠ Test execution timeout after 5 minutes")
-            return TestResult(
+            return PytestRunResult(
                 total_tests=0,
                 passed=0,
                 failed=1,
@@ -114,7 +114,7 @@ class TestAnalyzer:
             )
         except FileNotFoundError:
             print("❌ pytest not found. Install with: pip install pytest pytest-cov")
-            return TestResult(
+            return PytestRunResult(
                 total_tests=0,
                 passed=0,
                 failed=0,
@@ -122,7 +122,7 @@ class TestAnalyzer:
             )
         except Exception as e:
             print(f"❌ Error running tests: {e}")
-            return TestResult(
+            return PytestRunResult(
                 total_tests=0,
                 passed=0,
                 failed=0,
@@ -133,7 +133,7 @@ class TestAnalyzer:
         self,
         result: subprocess.CompletedProcess,
         duration: float
-    ) -> TestResult:
+    ) -> PytestRunResult:
         """Parse pytest output and extract test metrics."""
         # Try to read JSON report first (most reliable)
         json_report = self.project_root / "test_results.json"
@@ -148,7 +148,7 @@ class TestAnalyzer:
         # Fallback: parse text output
         return self._parse_text_output(result.stdout, duration)
 
-    def _parse_json_report(self, data: dict, duration: float) -> TestResult:
+    def _parse_json_report(self, data: dict, duration: float) -> PytestRunResult:
         """Parse pytest JSON report."""
         summary = data.get("summary", {})
 
@@ -171,7 +171,7 @@ class TestAnalyzer:
                     "error": test.get("call", {}).get("longrepr", "")[:200]
                 })
 
-        return TestResult(
+        return PytestRunResult(
             total_tests=total,
             passed=passed,
             failed=failed,
@@ -182,7 +182,7 @@ class TestAnalyzer:
             failed_tests=failed_tests
         )
 
-    def _parse_text_output(self, output: str, duration: float) -> TestResult:
+    def _parse_text_output(self, output: str, duration: float) -> PytestRunResult:
         """Parse pytest text output (fallback method)."""
         # Look for summary line like: "5 passed, 2 failed in 1.23s"
         summary_pattern = r'(\d+)\s+passed'
@@ -217,7 +217,7 @@ class TestAnalyzer:
         # Get coverage
         coverage = self._read_coverage_report()
 
-        return TestResult(
+        return PytestRunResult(
             total_tests=total,
             passed=passed,
             failed=failed,
@@ -312,12 +312,12 @@ class TestAnalyzer:
             print(f"⚠ Failed to read file coverage: {e}")
             return {}
 
-    def format_test_summary(self, result: TestResult) -> str:
+    def format_test_summary(self, result: PytestRunResult) -> str:
         """
         Format test result as a colored terminal summary.
 
         Args:
-            result: TestResult object
+            result: PytestRunResult object
 
         Returns:
             Formatted string for terminal output

@@ -127,10 +127,10 @@ def sample_data():
 
 @pytest.fixture
 def sample_test_result():
-    """Return a sample TestResult object."""
-    from neural_cli.models import TestResult
+    """Return a sample PytestRunResult object."""
+    from neural_cli.models import PytestRunResult
 
-    return TestResult(
+    return PytestRunResult(
         total_tests=10,
         passed=9,
         failed=1,

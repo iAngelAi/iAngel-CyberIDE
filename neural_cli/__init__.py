@@ -29,12 +29,12 @@ from .models import (
     Diagnostic,
     DiagnosticLevel,
     FileChangeEvent,
-    TestResult,
+    PytestRunResult,
     WebSocketMessage,
     ProjectMetrics
 )
 from .file_watcher import FileWatcher, NeuralFileHandler
-from .test_analyzer import TestAnalyzer
+from .test_analyzer import PytestAnalyzer
 from .metric_calculator import MetricCalculator
 
 __all__ = [
@@ -49,12 +49,12 @@ __all__ = [
     "Diagnostic",
     "DiagnosticLevel",
     "FileChangeEvent",
-    "TestResult",
+    "PytestRunResult",
     "WebSocketMessage",
     "ProjectMetrics",
     # Components
     "FileWatcher",
     "NeuralFileHandler",
-    "TestAnalyzer",
+    "PytestAnalyzer",
     "MetricCalculator",
 ]

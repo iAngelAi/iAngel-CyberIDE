@@ -224,12 +224,13 @@ class GitPulseEngine:
         """
         try:
             # Préparer les arguments de filtrage
+            # Note: --name-status was removed because:
+            # 1. It's incompatible with --pretty=format (causes git error)
+            # 2. File changes are already fetched separately via git show
             log_args = [
                 "git", "log",
                 f"-{limit}",
                 "--pretty=format:%H|%an|%at|%s|%D",
-                "--no-patch",
-                "--name-status"
             ]
 
             # Ajout des filtres
@@ -242,7 +243,8 @@ class GitPulseEngine:
             if branch:
                 log_args.append(branch)
             if file_pattern:
-                log_args.append(f"-- {file_pattern}")
+                # NOTE: "--" and path must be separate arguments for git
+                log_args.extend(["--", file_pattern])
 
             pulses = []
             # Exécuter la commande log avec les filtres

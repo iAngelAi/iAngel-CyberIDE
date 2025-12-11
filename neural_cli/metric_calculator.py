@@ -325,7 +325,13 @@ class MetricCalculator:
             score += 20.0
 
         # API documentation or OpenAPI spec (15 points)
-        api_docs = list(self.project_root.glob("**/openapi*.{json,yaml,yml}"))
+        # Note: pathlib.glob() does not support brace expansion {a,b,c}
+        # We must check each extension separately
+        api_docs = (
+            list(self.project_root.glob("**/openapi*.json")) +
+            list(self.project_root.glob("**/openapi*.yaml")) +
+            list(self.project_root.glob("**/openapi*.yml"))
+        )
         if api_docs:
             score += 15.0
 

@@ -1,5 +1,5 @@
 """
-Tests for TestAnalyzer - pytest execution and coverage analysis.
+Tests for PytestAnalyzer - pytest execution and coverage analysis.
 
 This module validates:
 - Running pytest tests and collecting results
@@ -19,8 +19,8 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
-from neural_cli.test_analyzer import TestAnalyzer
-from neural_cli.models import TestResult
+from neural_cli.test_analyzer import PytestAnalyzer
+from neural_cli.models import PytestRunResult
 
 
 # ============================================================================
@@ -141,14 +141,14 @@ class TestTestFileDetection:
 
     def test_get_test_files_empty_directory(self, empty_project):
         """Test getting test files from empty directory."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         test_files = analyzer.get_test_files()
 
         assert test_files == []
 
     def test_get_test_files_with_tests(self, project_with_tests):
         """Test getting test files from directory with tests."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         test_files = analyzer.get_test_files()
 
         # Should find test_unit.py and test_integration.py
@@ -167,7 +167,7 @@ class TestTestFileDetection:
         (tests_dir / "conftest.py").write_text("# config")
         (tests_dir / "data.json").write_text("{}")
 
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
         test_files = analyzer.get_test_files()
 
         # Should only find test_valid.py
@@ -179,7 +179,7 @@ class TestTestFileDetection:
         tests_dir = tmp_path / "tests"
         tests_dir.mkdir()
 
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
 
         # Valid test file
         assert analyzer._is_test_file(str(tests_dir / "test_foo.py"))
@@ -203,42 +203,42 @@ class TestShouldRunTests:
 
     def test_should_run_tests_for_test_file(self, project_with_tests):
         """Test should run for test file changes."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         test_file = str(project_with_tests / "tests" / "test_unit.py")
         assert analyzer.should_run_tests(test_file) is True
 
     def test_should_run_tests_for_source_file(self, project_with_tests):
         """Test should run for source file changes."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         src_file = str(project_with_tests / "src" / "main.ts")
         assert analyzer.should_run_tests(src_file) is True
 
     def test_should_run_tests_for_backend_file(self, project_with_tests):
         """Test should run for backend file changes."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         backend_file = str(project_with_tests / "neural_cli" / "core.py")
         assert analyzer.should_run_tests(backend_file) is True
 
     def test_should_not_run_tests_for_readme(self, project_with_tests):
         """Test should not run for README changes."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         readme_file = str(project_with_tests / "README.md")
         assert analyzer.should_run_tests(readme_file) is False
 
     def test_should_not_run_tests_for_config(self, project_with_tests):
         """Test should not run for config file changes."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         config_file = str(project_with_tests / "package.json")
         assert analyzer.should_run_tests(config_file) is False
 
     def test_should_not_run_tests_for_git_files(self, project_with_tests):
         """Test should not run for .git files."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         git_file = str(project_with_tests / ".git" / "config")
         assert analyzer.should_run_tests(git_file) is False
@@ -253,14 +253,14 @@ class TestCoverageReportReading:
 
     def test_read_coverage_report_valid(self, tmp_path, mock_coverage_json):
         """Test reading valid coverage report."""
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
         coverage = analyzer._read_coverage_report()
 
         assert coverage == 87.5
 
     def test_read_coverage_report_missing_file(self, empty_project):
         """Test reading coverage when file doesn't exist."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         coverage = analyzer._read_coverage_report()
 
         assert coverage == 0.0
@@ -270,14 +270,14 @@ class TestCoverageReportReading:
         coverage_file = tmp_path / "coverage.json"
         coverage_file.write_text("not valid json{}")
 
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
         coverage = analyzer._read_coverage_report()
 
         assert coverage == 0.0
 
     def test_get_coverage_by_file(self, tmp_path, mock_coverage_json):
         """Test getting coverage per file."""
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
         coverage_by_file = analyzer.get_coverage_by_file()
 
         assert "/src/main.py" in coverage_by_file
@@ -286,7 +286,7 @@ class TestCoverageReportReading:
 
     def test_get_coverage_by_file_no_report(self, empty_project):
         """Test getting coverage by file when no report exists."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         coverage_by_file = analyzer.get_coverage_by_file()
 
         assert coverage_by_file == {}
@@ -301,7 +301,7 @@ class TestPytestOutputParsing:
 
     def test_parse_json_report_valid(self, tmp_path, mock_test_results_json, mock_coverage_json):
         """Test parsing valid JSON report."""
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
 
         mock_result = Mock()
         mock_result.stdout = ""
@@ -318,7 +318,7 @@ class TestPytestOutputParsing:
 
     def test_parse_text_output_with_passed(self, empty_project):
         """Test parsing text output with passed tests."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         output = "5 passed in 1.23s"
         test_result = analyzer._parse_text_output(output, duration=1.23)
@@ -329,7 +329,7 @@ class TestPytestOutputParsing:
 
     def test_parse_text_output_with_failures(self, empty_project):
         """Test parsing text output with failures."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         output = "3 passed, 2 failed in 2.5s"
         test_result = analyzer._parse_text_output(output, duration=2.5)
@@ -340,7 +340,7 @@ class TestPytestOutputParsing:
 
     def test_parse_text_output_with_skipped(self, empty_project):
         """Test parsing text output with skipped tests."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         output = "5 passed, 2 skipped in 1.0s"
         test_result = analyzer._parse_text_output(output, duration=1.0)
@@ -351,7 +351,7 @@ class TestPytestOutputParsing:
 
     def test_parse_text_output_with_errors(self, empty_project):
         """Test parsing text output with errors."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         output = "5 passed, 1 error in 1.5s"
         test_result = analyzer._parse_text_output(output, duration=1.5)
@@ -362,7 +362,7 @@ class TestPytestOutputParsing:
 
     def test_parse_text_output_no_tests(self, empty_project):
         """Test parsing text output when no tests match."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         output = "no tests ran"
         test_result = analyzer._parse_text_output(output, duration=0.0)
@@ -380,7 +380,7 @@ class TestTestExecution:
 
     def test_run_tests_no_tests_directory(self, empty_project):
         """Test running tests when tests directory doesn't exist."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         result = analyzer.run_tests()
 
         assert result.total_tests == 0
@@ -396,7 +396,7 @@ class TestTestExecution:
         mock_process.returncode = 0
         mock_run.return_value = mock_process
 
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         result = analyzer.run_tests()
 
         # Verify subprocess.run was called with correct arguments
@@ -411,7 +411,7 @@ class TestTestExecution:
         """Test test run timeout handling."""
         mock_run.side_effect = subprocess.TimeoutExpired("pytest", 300)
 
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         result = analyzer.run_tests()
 
         assert result.failed == 1
@@ -423,7 +423,7 @@ class TestTestExecution:
         """Test handling when pytest is not installed."""
         mock_run.side_effect = FileNotFoundError("pytest not found")
 
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         result = analyzer.run_tests()
 
         assert result.errors == 1
@@ -436,7 +436,7 @@ class TestTestExecution:
         mock_process.stdout = "2 passed in 0.5s"
         mock_run.return_value = mock_process
 
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         result = analyzer.run_tests(path="tests/test_unit.py")
 
         # Verify path was passed to pytest
@@ -450,7 +450,7 @@ class TestTestExecution:
         mock_process.stdout = "5 passed in 1.0s"
         mock_run.return_value = mock_process
 
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         result = analyzer.run_tests(verbose=True)
 
         # Verify -v flag was passed
@@ -462,7 +462,7 @@ class TestTestExecution:
         """Test handling of unexpected exceptions."""
         mock_run.side_effect = Exception("Unexpected error")
 
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
         result = analyzer.run_tests()
 
         assert result.errors == 1
@@ -478,9 +478,9 @@ class TestFormatTestSummary:
 
     def test_format_summary_passing_tests(self, empty_project):
         """Test formatting summary for passing tests."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=10,
             passed=10,
             failed=0,
@@ -499,9 +499,9 @@ class TestFormatTestSummary:
 
     def test_format_summary_failing_tests(self, empty_project):
         """Test formatting summary for failing tests."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=10,
             passed=8,
             failed=2,
@@ -524,9 +524,9 @@ class TestFormatTestSummary:
 
     def test_format_summary_no_tests(self, empty_project):
         """Test formatting summary when no tests exist."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
-        result = TestResult(total_tests=0)
+        result = PytestRunResult(total_tests=0)
 
         summary = analyzer.format_test_summary(result)
 
@@ -534,9 +534,9 @@ class TestFormatTestSummary:
 
     def test_format_summary_with_errors(self, empty_project):
         """Test formatting summary with test errors."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=10,
             passed=8,
             failed=1,
@@ -560,7 +560,7 @@ class TestCreatePlaceholderTests:
 
     def test_create_placeholder_structure(self, empty_project):
         """Test creating placeholder test structure."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         analyzer.create_placeholder_tests()
 
         # Verify structure was created
@@ -572,7 +572,7 @@ class TestCreatePlaceholderTests:
 
     def test_create_placeholder_conftest_content(self, empty_project):
         """Test conftest.py has correct fixtures."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         analyzer.create_placeholder_tests()
 
         conftest = empty_project / "tests" / "conftest.py"
@@ -584,7 +584,7 @@ class TestCreatePlaceholderTests:
 
     def test_create_placeholder_sample_test_content(self, empty_project):
         """Test test_sample.py has valid tests."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
         analyzer.create_placeholder_tests()
 
         sample_test = empty_project / "tests" / "test_sample.py"
@@ -596,7 +596,7 @@ class TestCreatePlaceholderTests:
 
     def test_create_placeholder_idempotent(self, empty_project):
         """Test create_placeholder_tests is idempotent."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         # Create once
         analyzer.create_placeholder_tests()
@@ -619,7 +619,7 @@ class TestEdgeCases:
 
     def test_analyzer_with_nonexistent_path(self):
         """Test analyzer handles nonexistent project path."""
-        analyzer = TestAnalyzer("/nonexistent/path")
+        analyzer = PytestAnalyzer("/nonexistent/path")
 
         # Should not crash
         test_files = analyzer.get_test_files()
@@ -637,7 +637,7 @@ class TestEdgeCases:
         results_file = tmp_path / "test_results.json"
         results_file.write_text(json.dumps(incomplete_data))
 
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
         mock_result = Mock()
 
         result = analyzer._parse_pytest_output(mock_result, duration=1.0)
@@ -656,16 +656,16 @@ class TestEdgeCases:
         coverage_file = tmp_path / "coverage.json"
         coverage_file.write_text(json.dumps(coverage_data))
 
-        analyzer = TestAnalyzer(str(tmp_path))
+        analyzer = PytestAnalyzer(str(tmp_path))
         coverage = analyzer._read_coverage_report()
 
         assert coverage == 0.0
 
     def test_very_long_test_duration(self, empty_project):
         """Test handling very long test duration."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=100,
             passed=100,
             duration=3600.0  # 1 hour
@@ -677,11 +677,11 @@ class TestEdgeCases:
 
     def test_failed_test_with_very_long_error(self, empty_project):
         """Test failed test with very long error message."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         long_error = "AssertionError: " + ("x" * 1000)
 
-        result = TestResult(
+        result = PytestRunResult(
             total_tests=1,
             passed=0,
             failed=1,
@@ -698,7 +698,7 @@ class TestEdgeCases:
 
     def test_unicode_in_test_output(self, empty_project):
         """Test handling Unicode in test output."""
-        analyzer = TestAnalyzer(str(empty_project))
+        analyzer = PytestAnalyzer(str(empty_project))
 
         output = "5 passed, 1 failed 🎉 in 1.0s"
         result = analyzer._parse_text_output(output, duration=1.0)
@@ -708,7 +708,7 @@ class TestEdgeCases:
 
     def test_should_run_tests_with_relative_path(self, project_with_tests):
         """Test should_run_tests with relative paths."""
-        analyzer = TestAnalyzer(str(project_with_tests))
+        analyzer = PytestAnalyzer(str(project_with_tests))
 
         # Use relative path
         relative_path = "src/main.ts"

@@ -23,12 +23,12 @@ import uvicorn
 from .models import (
     NeuralStatus,
     FileChangeEvent,
-    TestResult,
+    PytestRunResult,
     WebSocketMessage,
     BrainRegion
 )
 from .file_watcher import FileWatcher
-from .test_analyzer import TestAnalyzer
+from .test_analyzer import PytestAnalyzer
 from .metric_calculator import MetricCalculator
 from .file_mapper import FileMapper, FileMappingResult
 from .git_pulse import GitPulseEngine
@@ -40,7 +40,7 @@ class NeuralCore:
     def __init__(self):
         self.project_root: Path = Path.cwd()
         self.watcher: FileWatcher | None = None
-        self.test_analyzer: TestAnalyzer | None = None
+        self.test_analyzer: PytestAnalyzer | None = None
         self.metric_calculator: MetricCalculator | None = None
         self.file_mapper: FileMapper | None = None
         self.git_pulse: GitPulseEngine | None = None
@@ -118,7 +118,7 @@ async def lifespan(app: FastAPI):
     print(f"ℹ Project Root: {neural_core.project_root}")
 
     # Initialize components
-    neural_core.test_analyzer = TestAnalyzer(str(neural_core.project_root))
+    neural_core.test_analyzer = PytestAnalyzer(str(neural_core.project_root))
     neural_core.metric_calculator = MetricCalculator(str(neural_core.project_root))
     neural_core.file_mapper = FileMapper(str(neural_core.project_root))
 
@@ -578,7 +578,7 @@ async def run_tests_and_update():
         neural_core.test_running = False
 
 
-async def update_neural_status(test_result: TestResult = None):
+async def update_neural_status(test_result: PytestRunResult = None):
     """Update the neural status based on current project state."""
     if not neural_core.metric_calculator:
         return
