@@ -10,6 +10,8 @@ def test_sample_pass():
 
 def test_basic_math():
     """Test basic arithmetic."""
+    # This is a new comment added to trigger a change
+    # Second attempt to trigger the brain!
     assert 1 + 1 == 2
     assert 2 * 3 == 6
 

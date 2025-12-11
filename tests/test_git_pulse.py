@@ -30,6 +30,12 @@ def temp_git_repo(tmp_path):
         cwd=tmp_path,
         check=True
     )
+    # Désactiver la signature GPG pour éviter les blocages interactifs même pour les dépôts temporaires
+    subprocess.run(
+        ["git", "config", "commit.gpgsign", "false"],
+        cwd=tmp_path,
+        check=True
+    )
 
     # Créer quelques fichiers et commits
     commits_data = [
@@ -173,18 +179,19 @@ class TestGitPulseFilters:
             os.makedirs(file_path.parent, exist_ok=True)
             file_path.write_text(commit['content'])
 
-            # Configurer l'auteur pour ce commit
-            subprocess.run(
-                ["git", "config", "user.name", commit['author']],
-                cwd=temp_git_repo,
-                check=True
-            )
+            # Configurer l'environnement pour ce commit spécifique
+            env = os.environ.copy()
+            env["GIT_AUTHOR_NAME"] = commit['author']
+            env["GIT_COMMITTER_NAME"] = commit['author']
+            env["GIT_AUTHOR_EMAIL"] = f"{commit['author']}@example.com"
+            env["GIT_COMMITTER_EMAIL"] = f"{commit['author']}@example.com"
 
             subprocess.run(["git", "add", commit['file']], cwd=temp_git_repo, check=True)
             subprocess.run(
                 ["git", "commit", "-m", commit['message']],
                 cwd=temp_git_repo,
-                check=True
+                check=True,
+                env=env # Utiliser l'environnement modifié
             )
 
         pulse_engine = GitPulseEngine(str(temp_git_repo))

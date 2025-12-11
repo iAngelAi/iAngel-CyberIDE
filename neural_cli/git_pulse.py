@@ -19,6 +19,7 @@ import asyncio
 from pathlib import Path
 import json
 import re
+import os
 
 
 @dataclass
@@ -78,15 +79,31 @@ class GitPulseEngine:
             # Initialiser Git si nécessaire
             self._init_git_repo()
 
+    def _run_git_command(self, cmd: List[str], capture_output: bool = True, text: bool = True, check: bool = True) -> subprocess.CompletedProcess:
+        """Helper to run git commands with non-interactive SSH."""
+        env = os.environ.copy()
+        env["GIT_SSH_COMMAND"] = "ssh -o BatchMode=yes"
+        try:
+            return subprocess.run(
+                cmd,
+                cwd=str(self.repo_path),
+                capture_output=capture_output,
+                text=text,
+                check=check,
+                env=env
+            )
+        except subprocess.CalledProcessError as e:
+            # Log the error but don't re-raise for non-critical git info commands unless check=True was passed and handled by caller
+            if check:
+                raise e
+            print(f"⚠ Git command failed: {' '.join(cmd)}. Error: {e.stderr.strip() if e.stderr else 'unknown'}")
+            # Return a dummy failed process object so callers don't crash if they don't catch exception
+            return subprocess.CompletedProcess(args=cmd, returncode=1, stdout="", stderr=str(e))
+
     def _init_git_repo(self):
         """Initialise un dépôt Git s'il n'existe pas."""
         try:
-            subprocess.run(
-                ["git", "init"],
-                cwd=self.repo_path,
-                capture_output=True,
-                check=True
-            )
+            self._run_git_command(["git", "init"], check=True)
             print(f"✓ Git repository initialized at {self.repo_path}")
         except subprocess.CalledProcessError:
             print(f"❌ Failed to initialize Git repository")
@@ -130,13 +147,7 @@ class GitPulseEngine:
     def _get_latest_commit_hash(self) -> Optional[str]:
         """Récupère le hash du dernier commit."""
         try:
-            result = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
-                check=True
-            )
+            result = self._run_git_command(["git", "rev-parse", "HEAD"], check=True)
             return result.stdout.strip()
         except subprocess.CalledProcessError:
             return None
@@ -155,78 +166,9 @@ class GitPulseEngine:
     ) -> List[Dict[str, Any]]:
         """
         Récupère et analyse les pulses Git avec des filtres avancés.
-
-        Filtres puissants pour explorer l'historique Git avec précision.
-        Chaque filtre peut être utilisé individuellement ou combiné.
-
-        Exemples:
-        ```python
-        # Commits récents
-        pulses = _get_git_pulses(since='1 month ago')
-
-        # Commits d'un développeur spécifique
-        pulses = _get_git_pulses(author='Fil LeFebvre')
-
-        # Fusions de branches importantes
-        pulses = _get_git_pulses(
-            pulse_types=['merge'],
-            min_changes=100,
-            since='3 months ago'
-        )
-        ```
-
-        Args:
-            limit: Nombre max de pulses à retourner (défaut: 50)
-
-            since: Date/période de début, formats supportés:
-                - '1 week ago'
-                - '2023-01-01'
-                - 'last month'
-                Permet de filtrer les commits récents
-
-            until: Date/période de fin, mêmes formats que 'since'
-
-            author: Filtrer par nom exact de l'auteur
-
-            branch: Filtrer par nom de branche
-
-            pulse_types: Types de pulses à inclure:
-                - 'commit': Commits standards
-                - 'merge': Fusions de branches
-                - 'branch': Changements de branches
-
-            min_changes: Nombre minimum de lignes modifiées
-
-            max_changes: Nombre maximum de lignes modifiées
-
-            file_pattern: Filtrer par motif de fichier
-                (ex: 'src/components' pour les composants frontend)
-
-        Returns:
-            Liste de pulses Git correspondant aux filtres
-            Chaque pulse contient:
-            - id: Hash court du commit
-            - type: Type de pulse
-            - hash: Hash complet
-            - author: Nom de l'auteur
-            - message: Message du commit
-            - timestamp: Date du commit
-            - insertions: Nombre de lignes ajoutées
-            - deletions: Nombre de lignes supprimées
-            - filesChanged: Fichiers modifiés
-            - intensity: Impact du commit (0-1)
-            - color: Couleur associée au pulse
-
-        Notes:
-            - Les filtres sont combinables
-            - Performance optimisée via commandes Git
-            - Gestion des erreurs intégrée
         """
         try:
             # Préparer les arguments de filtrage
-            # Note: --name-status was removed because:
-            # 1. It's incompatible with --pretty=format (causes git error)
-            # 2. File changes are already fetched separately via git show
             log_args = [
                 "git", "log",
                 f"-{limit}",
@@ -243,18 +185,11 @@ class GitPulseEngine:
             if branch:
                 log_args.append(branch)
             if file_pattern:
-                # NOTE: "--" and path must be separate arguments for git
                 log_args.extend(["--", file_pattern])
 
             pulses = []
             # Exécuter la commande log avec les filtres
-            log_result = subprocess.run(
-                log_args,
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
-                check=True
-            )
+            log_result = self._run_git_command(log_args, check=True)
             log_lines = log_result.stdout.strip().split('\n')
 
             color_map = {
@@ -290,11 +225,8 @@ class GitPulseEngine:
                         continue
 
                     # Récupérer les fichiers modifiés et statistiques
-                    files_changed_result = subprocess.run(
+                    files_changed_result = self._run_git_command(
                         ["git", "show", "--name-status", "--pretty=", hash_val],
-                        cwd=self.repo_path,
-                        capture_output=True,
-                        text=True,
                         check=True
                     )
 
@@ -305,15 +237,12 @@ class GitPulseEngine:
                     ]
 
                     # Calculer les insertions/suppressions
-                    stats_result = subprocess.run(
+                    stats_result = self._run_git_command(
                         ["git", "show", "--shortstat", "--pretty=", hash_val],
-                        cwd=self.repo_path,
-                        capture_output=True,
-                        text=True,
                         check=True
                     )
 
-                    stats_match = re.search(r'(\d+) insertions?\(\+\), (\d+) deletions?\(-\)', stats_result.stdout)
+                    stats_match = re.search(r'(\d+) insertions?\(\+\), (\d+) deletions?(-)', stats_result.stdout)
                     insertions = int(stats_match.group(1)) if stats_match else 0
                     deletions = int(stats_match.group(2)) if stats_match else 0
 
@@ -363,7 +292,7 @@ class GitPulseEngine:
             return pulses[:limit]
 
         except subprocess.CalledProcessError as e:
-            print(f"⚠ Erreur Git : {e}")
+            print(f"⚠ Erreur Git : {e.stderr.strip() if e.stderr else 'unknown'}")
             return []
         except Exception as e:
             print(f"⚠ Erreur lors de la génération des pulses : {e}")
@@ -373,11 +302,8 @@ class GitPulseEngine:
         """Calcule la heat map des fichiers modifiés."""
         try:
             # Obtenir l'historique des fichiers modifiés
-            result = subprocess.run(
+            result = self._run_git_command(
                 ["git", "log", f"--since={days} days ago", "--name-only", "--pretty=format:"],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
                 check=True
             )
 
@@ -394,11 +320,8 @@ class GitPulseEngine:
             for file_path, count in file_counts.items():
                 # Obtenir la dernière date de modification
                 try:
-                    last_mod_result = subprocess.run(
+                    last_mod_result = self._run_git_command(
                         ["git", "log", "-1", "--format=%at", "--", file_path],
-                        cwd=self.repo_path,
-                        capture_output=True,
-                        text=True,
                         check=True
                     )
 
@@ -406,7 +329,9 @@ class GitPulseEngine:
                         int(last_mod_result.stdout.strip()),
                         tz=timezone.utc
                     )
-                except:
+                except subprocess.CalledProcessError:
+                    last_modified = datetime.now(timezone.utc)
+                except Exception:
                     last_modified = datetime.now(timezone.utc)
 
                 heat_map.append(FileHeat(
@@ -428,11 +353,8 @@ class GitPulseEngine:
         """Liste les branches avec leur activité."""
         try:
             # Obtenir toutes les branches
-            branches_result = subprocess.run(
+            branches_result = self._run_git_command(
                 ["git", "branch", "-a"],
-                cwd=self.repo_path,
-                capture_output=True,
-                text=True,
                 check=True
             )
 
@@ -451,11 +373,8 @@ class GitPulseEngine:
 
                 # Obtenir le dernier commit de la branche
                 try:
-                    last_commit_result = subprocess.run(
+                    last_commit_result = self._run_git_command(
                         ["git", "log", "-1", "--format=%at", branch_name],
-                        cwd=self.repo_path,
-                        capture_output=True,
-                        text=True,
                         check=True
                     )
 
@@ -467,14 +386,13 @@ class GitPulseEngine:
                     # Compter les commits ahead de main/master
                     commits_ahead = 0
                     try:
-                        ahead_result = subprocess.run(
+                        ahead_result = self._run_git_command(
                             ["git", "rev-list", "--count", f"main..{branch_name}"],
-                            cwd=self.repo_path,
-                            capture_output=True,
-                            text=True
+                            check=False
                         )
-                        commits_ahead = int(ahead_result.stdout.strip())
-                    except:
+                        commits_ahead = int(ahead_result.stdout.strip()) if ahead_result.returncode == 0 else 0
+                    except Exception as e:
+                        print(f"⚠ Error getting commits ahead for {branch_name}: {e}")
                         pass
 
                     # Assigner une couleur selon le nom de la branche

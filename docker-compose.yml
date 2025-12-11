@@ -61,11 +61,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      target: development
       platforms:
         - linux/arm64
     container_name: cyberide-frontend
     ports:
-      - "5173:80"  # Nginx serves on 80, mapped to 5173 externally
+      - "5173:5173"  # Vite dev server
     volumes:
       # Hot reload: Mount source code
       - ./src:/app/src:ro

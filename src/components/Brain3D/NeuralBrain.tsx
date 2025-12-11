@@ -63,6 +63,26 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
     }
   });
 
+  // Auto-rotation animation
+  useFrame((state, delta) => {
+    if (groupRef.current && autoRotate) {
+      groupRef.current.rotation.y += delta * 0.1;
+    }
+
+    // Update shader uniforms
+    if (shaderMaterialRef.current) {
+      shaderMaterialRef.current.uniforms.time.value = state.clock.elapsedTime;
+      shaderMaterialRef.current.uniforms.illuminationLevel.value = illuminationLevel;
+      shaderMaterialRef.current.uniforms.pulseIntensity.value = illuminationLevel;
+    }
+
+    // Pulsing effect based on illumination
+    if (coreRef.current) {
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.02 * illuminationLevel;
+      coreRef.current.scale.setScalar(scale);
+    }
+  });
+
   // Neural pathways (connecting lines between regions)
   const pathways = useMemo(() => {
     const lines: React.ReactElement[] = [];

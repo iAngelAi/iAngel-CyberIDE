@@ -174,6 +174,8 @@ class TestCountFilesByRegion:
         (tmp_path / "src" / "components" / "ui").mkdir(parents=True)
         (tmp_path / "src" / "components" / "Button.tsx").write_text("// button")
         (tmp_path / "src" / "components" / "ui" / "Input.tsx").write_text("// input")
+        # Créer un répertoire src/hooks pour le test
+        (tmp_path / "src" / "hooks").mkdir(parents=True)
         (tmp_path / "src" / "hooks" / "useAuth.ts").write_text("// hook")
 
         calculator = MetricCalculator(str(tmp_path))

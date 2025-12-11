@@ -9,6 +9,7 @@ and reports results to the WebSocket server.
 import subprocess
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Dict, Optional, List
 from datetime import datetime, timezone
@@ -52,8 +53,8 @@ class PytestAnalyzer:
         Returns:
             PytestRunResult object with test metrics and coverage
         """
-        # Build pytest command
-        cmd = ["pytest"]
+        # Build pytest command using current python interpreter
+        cmd = [sys.executable, "-m", "pytest"]
 
         # Add target path
         if path:

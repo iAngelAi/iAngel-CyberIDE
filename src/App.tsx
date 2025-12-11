@@ -165,28 +165,25 @@ function App() {
   );
 
   // Initialize WebSocket connection
-  const { status, isConnected, requestStatusRefresh } = useWebSocket(
-    'ws://localhost:8000/ws',
-    {
-      onMessage: handleWebSocketMessage,
-      onConnect: () => {
-        console.log('[App] WebSocket connected, requesting initial status');
-        addLog('WebSocket connected', 'Network', 'success');
-        // Request initial status after connection
-        setTimeout(() => requestStatusRefresh(), 500);
-      },
-      onDisconnect: () => {
-        console.log('[App] WebSocket disconnected');
-        addLog('WebSocket disconnected', 'Network', 'warn');
-        setIsInitialized(false);
-      },
+  const { isConnected, sendMessage } = useWebSocket<BackendWebSocketMessage>({
+    onMessage: handleWebSocketMessage,
+    onOpen: () => {
+      console.log('[App] WebSocket connected, requesting initial status');
+      addLog('WebSocket connected', 'Network', 'success');
+      // Request initial status after connection
+      setTimeout(() => sendMessage({ command: 'refresh_status' }), 500);
     },
-    {
-      autoConnect: true,
-      reconnect: true,
-      maxReconnectAttempts: 10,
-    }
-  );
+    onClose: () => {
+      console.log('[App] WebSocket disconnected');
+      addLog('WebSocket disconnected', 'Network', 'warn');
+      setIsInitialized(false);
+    },
+  });
+
+  // Helper to refresh status manually if needed
+  const requestStatusRefresh = useCallback(() => {
+    sendMessage({ command: 'refresh_status' });
+  }, [sendMessage]);
 
   // Simulate neural initialization (for demo when backend is offline)
   const [showGitDashboard, setShowGitDashboard] = useState(false);
@@ -237,23 +234,16 @@ function App() {
                 flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-xs
                 transition-all duration-300
                 ${
-                  status === 'connected'
+                  isConnected
                     ? 'bg-cyber-accent/20 text-cyber-accent border border-cyber-accent/30'
-                    : status === 'connecting'
-                    ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
                 }
               `}
             >
-              {status === 'connected' ? (
+              {isConnected ? (
                 <>
                   <Wifi className="w-4 h-4" />
                   <span>NEURAL CORE ONLINE</span>
-                </>
-              ) : status === 'connecting' ? (
-                <>
-                  <Wifi className="w-4 h-4 animate-pulse" />
-                  <span>CONNECTING...</span>
                 </>
               ) : (
                 <>
