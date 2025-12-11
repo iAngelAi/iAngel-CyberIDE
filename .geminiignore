@@ -1,0 +1,65 @@
+# .geminiignore — Fichiers exclus du contexte Gemini CLI
+
+# Dépendances
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Secrets & Environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Git
+.git/
+
+# Test artifacts
+coverage/
+.coverage
+htmlcov/
+.nyc_output/
+
+# Lock files (trop volumineux pour le contexte)
+package-lock.json
+yarn.lock
+poetry.lock
+
+# Fichiers générés
+neural_status.json
+*.generated.*
+
+# Assets binaires
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.svg
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Documentation générée
+docs/api/
+docs/_build/

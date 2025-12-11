@@ -13,7 +13,7 @@ import random
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from typing import List, Set
+from typing import List, Set, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,7 +25,8 @@ from .models import (
     FileChangeEvent,
     PytestRunResult,
     WebSocketMessage,
-    BrainRegion
+    BrainRegion,
+    SynapseActivation
 )
 from .file_watcher import FileWatcher
 from .test_analyzer import PytestAnalyzer
@@ -33,6 +34,27 @@ from .metric_calculator import MetricCalculator
 from .file_mapper import FileMapper, FileMappingResult
 from .git_pulse import GitPulseEngine
 
+
+# ============================================================================
+# UDP Protocol for Neural SDK
+# ============================================================================
+
+class NeuralUDPProtocol(asyncio.DatagramProtocol):
+    def __init__(self, on_message):
+        self.on_message = on_message
+
+    def connection_made(self, transport):
+        self.transport = transport
+        print(f"✓ Neural SDK UDP Receiver listening on port 8123")
+
+    def datagram_received(self, data, addr):
+        try:
+            message = data.decode()
+            data_dict = json.loads(message)
+            # Create task to handle message asynchronously
+            asyncio.create_task(self.on_message(data_dict))
+        except Exception as e:
+            print(f"⚠ Invalid UDP packet received: {e}")
 
 # Global state
 class NeuralCore:
@@ -167,6 +189,14 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(neural_core.git_pulse.start())
     print("✓ Git Pulse Engine started")
 
+    # Start UDP Listener for Neural SDK
+    print("\nℹ Starting Neural SDK Receiver...")
+    loop = asyncio.get_running_loop()
+    transport, protocol = await loop.create_datagram_endpoint(
+        lambda: NeuralUDPProtocol(handle_synapse_activation),
+        local_addr=('0.0.0.0', 8123)
+    )
+    
     print("\n" + "=" * 60)
     print("✓ NEURAL CORE Online - Ready to illuminate")
     print("=" * 60)
@@ -540,6 +570,27 @@ def handle_file_change(event: FileChangeEvent):
     if neural_core.test_analyzer and neural_core.test_analyzer.should_run_tests(event.file_path):
         print("  → Triggering test run...")
         asyncio.create_task(run_tests_and_update())
+
+
+async def handle_synapse_activation(data: dict):
+    """Handle incoming UDP synapse activations from the SDK."""
+    try:
+        activation = SynapseActivation(**data)
+        
+        # Broadcast immediately to frontend for visualization
+        await neural_core.broadcast(
+            WebSocketMessage(
+                type="synapse_activation",
+                data=activation
+            )
+        )
+        
+        # Log critical errors
+        if activation.status == "error":
+            print(f"🔥 SYNAPSE ERROR in {activation.function_name}: {activation.error_message}")
+            
+    except Exception as e:
+        print(f"⚠ Failed to process synapse activation: {e}")
 
 
 async def run_tests_and_update():

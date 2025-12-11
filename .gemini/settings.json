@@ -1,0 +1,135 @@
+{
+  "$schema": "https://geminicli.com/schemas/settings.json",
+  "version": "1.0.0",
+  "project": "iAngel-CyberIDE",
+  "configuredBy": "Lab AI Senior Pattern - 2025-12-11",
+  
+  "_documentation": {
+    "tiers": {
+      "tier1": "ALWAYS ON - context7, sequentialthinking",
+      "tier2": "ON-DEMAND - github-official, ast-grep, semgrep",
+      "tier3": "CI/TESTING - playwright-mcp-server",
+      "tier4": "SANDBOXED - mcp-code-interpreter"
+    },
+    "note": "See GEMINI.md for full tier documentation"
+  },
+  
+  "security": {
+    "selectedAuthType": "gemini-api-key",
+    "folderTrust": {
+      "enabled": true,
+      "trustedPaths": ["/Volumes/DevSSD/iAngel-CyberIDE"]
+    }
+  },
+  
+  "mcpServers": {
+    "context7": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "context7"],
+      "transport": "stdio",
+      "startup_timeout_ms": 15000,
+      "tool_timeout_ms": 30000,
+      "tier": 1,
+      "autoActivate": true
+    },
+    
+    "sequentialthinking": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "sequentialthinking"],
+      "transport": "stdio",
+      "startup_timeout_ms": 10000,
+      "tool_timeout_ms": 60000,
+      "tier": 1,
+      "autoActivate": true
+    },
+    
+    "github-official": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "github-official"],
+      "transport": "stdio",
+      "startup_timeout_ms": 20000,
+      "tool_timeout_ms": 45000,
+      "tier": 2,
+      "autoActivate": false,
+      "deniedTools": ["delete_file", "merge_pull_request"],
+      "requireConfirmation": ["create_pull_request", "push_files"]
+    },
+    
+    "ast-grep": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "ast-grep"],
+      "transport": "stdio",
+      "startup_timeout_ms": 10000,
+      "tool_timeout_ms": 30000,
+      "tier": 2,
+      "autoActivate": false
+    },
+    
+    "semgrep": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "semgrep"],
+      "transport": "stdio",
+      "startup_timeout_ms": 30000,
+      "tool_timeout_ms": 120000,
+      "tier": 2,
+      "autoActivate": false
+    },
+    
+    "playwright-mcp-server": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "playwright-mcp-server"],
+      "transport": "stdio",
+      "startup_timeout_ms": 60000,
+      "tool_timeout_ms": 180000,
+      "tier": 3,
+      "autoActivate": false,
+      "deniedTools": ["playwright_upload_file"]
+    },
+    
+    "mcp-code-interpreter": {
+      "command": "docker",
+      "args": ["mcp", "gateway", "run", "--servers", "mcp-code-interpreter"],
+      "transport": "stdio",
+      "startup_timeout_ms": 20000,
+      "tool_timeout_ms": 60000,
+      "tier": 4,
+      "autoActivate": false
+    }
+  },
+  
+  "toolPolicies": {
+    "shell": {
+      "allowlist": ["npm", "python", "pytest", "vitest", "git", "docker"],
+      "denylist": ["rm -rf", "sudo", "chmod 777", "curl | bash"],
+      "requireConfirmation": ["git push", "npm publish", "docker push"]
+    },
+    "mcp": {
+      "globalDeniedTools": ["delete_file", "merge_pull_request", "playwright_upload_file"],
+      "globalRequireConfirmation": ["create_pull_request", "push_files"]
+    }
+  },
+  
+  "tokenBudgets": {
+    "toolOutputTokenBudget": 4096,
+    "contextWindowTarget": 100000,
+    "maxOutputTokens": 8192
+  },
+  
+  "model": {
+    "defaultModel": "gemini-3-pro-preview",
+    "thinkingBudget": "auto",
+    "thinkingLevel": "HIGH"
+  },
+
+  "generation": {
+    "temperature": 1.0,
+    "topP": 0.95,
+    "maxOutputTokens": 65535,
+    "safetySettings": {
+      "HARM_CATEGORY_HATE_SPEECH": "OFF",
+      "HARM_CATEGORY_DANGEROUS_CONTENT": "OFF",
+      "HARM_CATEGORY_SEXUALLY_EXPLICIT": "OFF",
+      "HARM_CATEGORY_HARASSMENT": "OFF"
+    }
+  }
+}

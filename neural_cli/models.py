@@ -146,6 +146,26 @@ class NeuralStatus(BaseModel):
         }
 
 
+class SynapseActivation(BaseModel):
+    """
+    Real-time neural activation signal from the SDK.
+    """
+    timestamp: float
+    file_path: str
+    function_name: str
+    region: str
+    layer: str
+    status: str  # 'active', 'success', 'error'
+    duration_ms: float = 0.0
+    error_message: Optional[str] = None
+    metadata: Optional[dict] = None
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
+
 class FileChangeEvent(BaseModel):
     """Event emitted when a file changes in the watched directories."""
     event_type: str  # created, modified, deleted, moved
