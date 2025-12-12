@@ -63,26 +63,6 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
     }
   });
 
-  // Auto-rotation animation
-  useFrame((state, delta) => {
-    if (groupRef.current && autoRotate) {
-      groupRef.current.rotation.y += delta * 0.1;
-    }
-
-    // Update shader uniforms
-    if (shaderMaterialRef.current) {
-      shaderMaterialRef.current.uniforms.time.value = state.clock.elapsedTime;
-      shaderMaterialRef.current.uniforms.illuminationLevel.value = illuminationLevel;
-      shaderMaterialRef.current.uniforms.pulseIntensity.value = illuminationLevel;
-    }
-
-    // Pulsing effect based on illumination
-    if (coreRef.current) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.02 * illuminationLevel;
-      coreRef.current.scale.setScalar(scale);
-    }
-  });
-
   // Neural pathways (connecting lines between regions)
   const pathways = useMemo(() => {
     const lines: React.ReactElement[] = [];
@@ -125,7 +105,7 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
   return (
     <group ref={groupRef}>
       {/* Core Brain Sphere with custom shader */}
-      <Sphere ref={coreRef} args={[2, 128, 128]} position={[0, 0, 0]}>
+      <Sphere ref={coreRef} args={[2, 64, 64]} position={[0, 0, 0]}>
         <primitive 
           ref={shaderMaterialRef}
           object={customShaderMaterial} 
@@ -134,7 +114,7 @@ export const NeuralBrain: React.FC<NeuralBrainProps> = ({
       </Sphere>
 
       {/* Inner glow layer */}
-      <Sphere args={[1.95, 64, 64]} position={[0, 0, 0]}>
+      <Sphere args={[1.95, 48, 48]} position={[0, 0, 0]}>
         <meshBasicMaterial
           color="#00f0ff"
           transparent
@@ -222,7 +202,7 @@ const NeuralNode: React.FC<NeuralNodeProps> = ({ region }) => {
       {/* Main node sphere */}
       <Sphere
         ref={meshRef}
-        args={[0.3, 32, 32]}
+        args={[0.3, 16, 16]}
       >
         <meshStandardMaterial
           color={color}
@@ -239,7 +219,7 @@ const NeuralNode: React.FC<NeuralNodeProps> = ({ region }) => {
       {region.illumination > 0 && (
         <Sphere
           ref={glowRef}
-          args={[0.5, 16, 16]}
+          args={[0.5, 12, 12]}
         >
           <meshBasicMaterial
             color={color}
