@@ -16,14 +16,14 @@
 
 ---
 
-## 🎯 Concept
+## Concept
 
 CyberIDE visualise la **santé de votre code** sous forme d'un cerveau neural 3D. Les voies neurales s'illuminent progressivement selon :
 
-- ✅ Les tests qui passent
-- 📚 La documentation présente
-- 🔒 La sécurité du code
-- 🏗️ L'architecture des modules
+- Les tests qui passent
+- La documentation présente
+- La sécurité du code
+- L'architecture des modules
 
 ### Métaphore Visuelle (Neural Illumination)
 
@@ -34,11 +34,11 @@ CyberIDE visualise la **santé de votre code** sous forme d'un cerveau neural 3D
 | 50% | Logique métier + modules | Lobes illuminés, connexions lentes |
 | 75% | Tests passés + docs | Pulsations rapides, cyan/magenta |
 | 100% | Prod ready + sécurité | **FULL UPLINK** (blanc/or éclatant) |
-| ERROR | Test failed / régression | 🔴 **ZONE ROUGE** + diagnostic |
+| ERROR | Test failed / régression | **ZONE ROUGE** + diagnostic |
 
 ---
 
-## 🚀 Démarrage Rapide
+## Démarrage Rapide
 
 ### Prérequis
 
@@ -78,7 +78,7 @@ Ouvrez http://localhost:5173 pour voir le cerveau neural.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 CyberIDE/
@@ -129,7 +129,7 @@ CyberIDE/
 
 ---
 
-## 🛠️ Stack Technique
+## Stack Technique
 
 ### Frontend
 
@@ -154,7 +154,7 @@ CyberIDE/
 
 ---
 
-## 📋 Commandes Disponibles
+## Commandes Disponibles
 
 ### Frontend
 
@@ -183,7 +183,7 @@ pytest --cov=neural_cli tests/   # Avec couverture
 
 ---
 
-## 🎨 Thème Cyberpunk
+## Thème Cyberpunk
 
 La palette de couleurs est définie dans `tailwind.config.js` :
 
@@ -197,7 +197,7 @@ La palette de couleurs est définie dans `tailwind.config.js` :
 
 ---
 
-## 🧪 Tests
+## Tests
 
 ### Test-Driven Illumination
 
@@ -219,7 +219,7 @@ pytest --cov=neural_cli tests/
 
 ---
 
-## 📁 Fichiers Clés
+## Fichiers Clés
 
 | Fichier | Description |
 |---------|-------------|
@@ -230,7 +230,7 @@ pytest --cov=neural_cli tests/
 
 ---
 
-## 🔧 Configuration
+## Configuration
 
 ### Variables d'Environnement
 
@@ -249,15 +249,15 @@ NODE_ENV=development
 
 ---
 
-## 🚫 Règles de Code Strictes
+## Règles de Code Strictes
 
 ### TypeScript
 
 ```typescript
-// ❌ INTERDIT - Cast "as"
+// INTERDIT - Cast "as"
 const data = response as NeuralStatus;
 
-// ✅ REQUIS - Validation Zod
+// REQUIS - Validation Zod
 const result = NeuralStatusSchema.safeParse(response);
 if (!result.success) throw new ValidationError(result.error);
 const data = result.data;
@@ -266,11 +266,11 @@ const data = result.data;
 ### Python
 
 ```python
-# ✅ Type hints obligatoires
+# Type hints obligatoires
 def calculate_illumination(metrics: MetricData) -> float:
     ...
 
-# ✅ Pydantic pour les modèles
+# Pydantic pour les modèles
 class NeuralStatus(BaseModel):
     illumination_level: float
     regions: list[BrainRegion]
@@ -278,7 +278,7 @@ class NeuralStatus(BaseModel):
 
 ---
 
-## 🐳 Docker (Optionnel)
+## Docker (Optionnel)
 
 ```bash
 # Build et lancement
@@ -290,16 +290,16 @@ docker-compose up --build
 
 ---
 
-## 📚 Documentation Supplémentaire
+## Documentation
 
-- [QUICKSTART.md](./QUICKSTART.md) — Guide de démarrage rapide
-- [NEURAL_CORE_GUIDE.md](./NEURAL_CORE_GUIDE.md) — Guide complet du Neural Core
-- [SETUP.md](./SETUP.md) — Instructions d'installation détaillées
-- [ROADMAP.md](./ROADMAP.md) — Feuille de route du projet
+- [QUICKSTART.md](QUICKSTART.md) - Guide de démarrage rapide
+- [Documentation complète](docs/README.md) - Index de toute la documentation
+- [ROADMAP.md](ROADMAP.md) - Feuille de route du projet
+- [SECURITY.md](SECURITY.md) - Politique de sécurité et conformité
 
 ---
 
-## 🤝 Contribution
+## Contribution
 
 1. Fork le projet
 2. Créez une branche (`git checkout -b feature/amazing-feature`)
@@ -321,7 +321,7 @@ chore:    Maintenance
 
 ---
 
-## 📄 Licence
+## Licence
 
 Ce projet est sous licence propriétaire. Voir le fichier `LICENSE` pour plus de détails.
 
@@ -329,7 +329,7 @@ Ce projet est sous licence propriétaire. Voir le fichier `LICENSE` pour plus de
 
 <div align="center">
 
-**Développé avec 🧠 par [iAngelAi](https://github.com/iAngelAi)**
+**Développé par [iAngelAi](https://github.com/iAngelAi)**
 
 *"No test = No light. Let your code illuminate the neural pathways."*
 

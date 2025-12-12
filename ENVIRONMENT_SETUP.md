@@ -1,17 +1,17 @@
 # Environment Setup Guide
 
-## 🎯 Purpose
+## Purpose
 
 This guide ensures reproducible, conflict-free development environment setup for CyberIDE.
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Python**: 3.10 - 3.12 (recommended: 3.11)
 - **Node.js**: 20.x LTS (recommended: 20.19+)
 - **npm**: 10.x+ (comes with Node.js)
 - **Docker**: Optional but recommended for isolation
 
-## 🔒 Lock Files
+## Lock Files
 
 This project uses **lock files** to ensure reproducible builds:
 
@@ -22,7 +22,7 @@ This project uses **lock files** to ensure reproducible builds:
 
 **CRITICAL**: Lock files are tracked in Git. **Never delete or ignore them.**
 
-## 🚀 Setup Methods
+## Setup Methods
 
 ### Method 1: Native Installation (Recommended for Development)
 
@@ -125,7 +125,7 @@ docker-compose logs -f
 docker-compose down
 ```
 
-## 🔧 Development Workflow
+## Development Workflow
 
 ### Running the Application
 
@@ -317,7 +317,7 @@ docker system prune -a
 4. **Keep dependencies updated** - But test thoroughly!
 5. **Use virtual environments** - Prevents system-wide pollution
 
-## 📊 Environment Validation
+## Environment Validation
 
 Run validation before starting work:
 
