@@ -106,15 +106,18 @@ export const GitPulseTimeline: React.FC<GitPulseTimelineProps> = ({ pulses }) =>
 
       <div className="space-y-2 max-h-[300px] overflow-y-auto">
         {sortedPulses.map((pulse) => (
-          <div
+          <button
             key={pulse.id}
+            type="button"
             className={`
-              relative p-2 rounded-lg cursor-pointer transition-all duration-300
+              w-full text-left relative p-2 rounded-lg cursor-pointer transition-all duration-300
+              focus:outline-none focus:ring-2 focus:ring-cyber-primary/50
               ${selectedPulse?.id === pulse.id
                 ? 'bg-cyber-primary/10 border border-cyber-primary/30'
                 : 'hover:bg-cyber-darker/50'}
             `}
             onClick={() => setSelectedPulse(pulse)}
+            aria-current={selectedPulse?.id === pulse.id ? 'true' : undefined}
           >
             <div className="flex items-center space-x-3">
               {React.createElement(PulseTypeIcon[pulse.type] || Code, {
@@ -122,7 +125,7 @@ export const GitPulseTimeline: React.FC<GitPulseTimelineProps> = ({ pulses }) =>
                 color: pulse.color || GIT_PULSE_COLORS[pulse.type],
                 className: 'opacity-70'
               })}
-              <div className="flex-grow">
+              <div className="flex-grow min-w-0">
                 <p className="text-sm truncate text-white/80">
                   {pulse.message}
                 </p>
@@ -131,13 +134,13 @@ export const GitPulseTimeline: React.FC<GitPulseTimelineProps> = ({ pulses }) =>
                 </p>
               </div>
               <span
-                className="text-xs text-white/60 px-2 py-1 bg-cyber-darker rounded-full"
+                className="text-xs text-white/60 px-2 py-1 bg-cyber-darker rounded-full shrink-0"
                 style={{ backgroundColor: pulse.color || GIT_PULSE_COLORS[pulse.type] + '20' }}
               >
                 {pulse.type}
               </span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
