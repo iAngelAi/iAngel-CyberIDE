@@ -1,4 +1,4 @@
-# 📋 Template de Rapport d'Audit de Sécurité — CyberIDE
+# Template de Rapport d'Audit de Sécurité — CyberIDE
 
 <div align="center">
 
@@ -10,7 +10,7 @@ Audit Réalisé par: [NOM / ORGANISATION]
 
 ---
 
-## 📊 Résumé Exécutif
+## Résumé Exécutif
 
 ### Vue d'Ensemble de l'Audit
 
@@ -19,20 +19,20 @@ Audit Réalisé par: [NOM / ORGANISATION]
 | **Auditeur(s)** | [Nom(s)] |
 | **Organisation** | [Organisation] |
 | **Dates d'Audit** | [Date début] - [Date fin] |
-| **Type d'Audit** | ☐ Interne  ☐ Externe  ☐ Compliance  ☐ Penetration Testing |
+| **Type d'Audit** | ☐ Interne ☐ Externe ☐ Compliance ☐ Penetration Testing |
 | **Périmètre** | [Description du périmètre] |
-| **Référentiels** | ☐ OWASP Top 10  ☐ Loi 25  ☐ PIPEDA  ☐ RGPD  ☐ ISO 27001 |
+| **Référentiels** | ☐ OWASP Top 10 ☐ Loi 25 ☐ PIPEDA ☐ RGPD ☐ ISO 27001 |
 
 ### Score Global de Sécurité
 
 ```
 ┌────────────────────────────────────────┐
-│  SCORE GLOBAL: [XX]/100                │
-│                                        │
-│  ███████████████░░░░░░░░░░░░░░░  75%  │
-│                                        │
-│  Risque Global: ☐ LOW  ☑ MEDIUM       │
-│                 ☐ HIGH  ☐ CRITICAL     │
+│ SCORE GLOBAL: [XX]/100 │
+│ │
+│ ███████████████░░░░░░░░░░░░░░░ 75% │
+│ │
+│ Risque Global: ☐ LOW ☑ MEDIUM │
+│ ☐ HIGH ☐ CRITICAL │
 └────────────────────────────────────────┘
 ```
 
@@ -49,49 +49,49 @@ Audit Réalisé par: [NOM / ORGANISATION]
 ### Recommandations Prioritaires
 
 1. **[CRITICAL]** [Description de la recommandation #1]
-   - Impact: [Description]
-   - Échéance: Immédiat (< 24h)
+ - Impact: [Description]
+ - Échéance: Immédiat (< 24h)
 
 2. **[HIGH]** [Description de la recommandation #2]
-   - Impact: [Description]
-   - Échéance: Court terme (< 7 jours)
+ - Impact: [Description]
+ - Échéance: Court terme (< 7 jours)
 
 3. **[HIGH]** [Description de la recommandation #3]
-   - Impact: [Description]
-   - Échéance: Court terme (< 7 jours)
+ - Impact: [Description]
+ - Échéance: Court terme (< 7 jours)
 
 ---
 
-## 🎯 Périmètre et Méthodologie
+## Périmètre et Méthodologie
 
 ### Périmètre de l'Audit
 
 #### Systèmes Audités
 
-- ✅ **Frontend** (React + TypeScript)
-  - Application web (https://app.cyberide.com)
-  - API client
-  - Gestion d'état
+- **Frontend** (React + TypeScript)
+ - Application web (https://app.cyberide.com)
+ - API client
+ - Gestion d'état
 
-- ✅ **Backend** (FastAPI + Python)
-  - API REST (https://api.cyberide.com)
-  - WebSocket server
-  - Services d'analyse
+- **Backend** (FastAPI + Python)
+ - API REST (https://api.cyberide.com)
+ - WebSocket server
+ - Services d'analyse
 
-- ✅ **Infrastructure**
-  - Serveurs (AWS/Azure/GCP)
-  - Base de données
-  - Réseau et firewall
+- **Infrastructure**
+ - Serveurs (AWS/Azure/GCP)
+ - Base de données
+ - Réseau et firewall
 
-- ✅ **CI/CD**
-  - GitHub Actions
-  - Pipelines de sécurité
-  - Secrets management
+- **CI/CD**
+ - GitHub Actions
+ - Pipelines de sécurité
+ - Secrets management
 
 #### Exclusions
 
-- ❌ [Systèmes exclus de l'audit]
-- ❌ [Services tiers non contrôlés]
+- [Systèmes exclus de l'audit]
+- [Services tiers non contrôlés]
 
 ### Méthodologie
 
@@ -124,11 +124,11 @@ Audit Réalisé par: [NOM / ORGANISATION]
 
 ---
 
-## 🔍 Findings Détaillés
+## Findings Détaillés
 
 ### 🔴 CRITICAL - [0 findings]
 
-*Aucune vulnérabilité critique identifiée. ✅*
+*Aucune vulnérabilité critique identifiée. *
 
 ---
 
@@ -156,8 +156,8 @@ URL: https://api.cyberide.com/vulnerable/endpoint
 ```bash
 # Commandes pour reproduire
 curl -X POST https://api.cyberide.com/vulnerable \
-  -H "Content-Type: application/json" \
-  -d '{"malicious": "payload"}'
+ -H "Content-Type: application/json" \
+ -d '{"malicious": "payload"}'
 
 # Résultat attendu
 # [Description du comportement malveillant]
@@ -177,19 +177,19 @@ CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N
 [Description détaillée de la correction recommandée]
 
 ```typescript
-// ❌ Code vulnérable
+// Code vulnérable
 function processInput(userInput: any) {
-  return database.query(`SELECT * FROM users WHERE id = ${userInput}`);
+ return database.query(`SELECT * FROM users WHERE id = ${userInput}`);
 }
 
-// ✅ Code corrigé
+// Code corrigé
 import { z } from 'zod';
 
 const UserIdSchema = z.string().uuid();
 
 function processInput(userInput: unknown) {
-  const validatedId = UserIdSchema.parse(userInput);
-  return database.query('SELECT * FROM users WHERE id = ?', [validatedId]);
+ const validatedId = UserIdSchema.parse(userInput);
+ return database.query('SELECT * FROM users WHERE id = ?', [validatedId]);
 }
 ```
 
@@ -197,7 +197,7 @@ function processInput(userInput: unknown) {
 - [URL 1]
 - [URL 2]
 
-**Statut:** ☐ Open  ☐ In Progress  ☐ Fixed  ☐ Accepted Risk
+**Statut:** ☐ Open ☐ In Progress ☐ Fixed ☐ Accepted Risk
 
 ---
 
@@ -223,7 +223,7 @@ function processInput(userInput: unknown) {
 
 ---
 
-## 📋 Évaluation par Domaine
+## Évaluation par Domaine
 
 ### 1. Authentification et Gestion des Sessions
 
@@ -231,11 +231,11 @@ function processInput(userInput: unknown) {
 
 | Contrôle | Statut | Note |
 |----------|--------|------|
-| Mot de passe fort requis | ✅ Pass | 10/10 |
-| MFA disponible | ✅ Pass | 10/10 |
-| Timeout de session | ⚠️ Partial | 6/10 |
-| Token sécurisés (JWT) | ✅ Pass | 9/10 |
-| Invalidation de session | ❌ Fail | 0/10 |
+| Mot de passe fort requis | Pass | 10/10 |
+| MFA disponible | Pass | 10/10 |
+| Timeout de session | Partial | 6/10 |
+| Token sécurisés (JWT) | Pass | 9/10 |
+| Invalidation de session | Fail | 0/10 |
 
 **Findings:**
 - [Liste des vulnérabilités trouvées dans ce domaine]
@@ -317,7 +317,7 @@ function processInput(userInput: unknown) {
 
 ---
 
-## 📊 Analyse de Conformité
+## Analyse de Conformité
 
 ### Loi 25 (Québec)
 
@@ -325,11 +325,11 @@ function processInput(userInput: unknown) {
 
 | Exigence | Statut | Commentaire |
 |----------|--------|-------------|
-| Registre des incidents | ✅ Conforme | Registre maintenu à jour |
-| ÉFVP réalisée | ⚠️ Partiel | Manque pour nouveaux traitements |
-| Responsable désigné | ✅ Conforme | Coordonnées publiées |
-| Mesures de sécurité | ⚠️ Partiel | Chiffrement incomplet |
-| Notification 72h | ✅ Conforme | Procédure en place |
+| Registre des incidents | Conforme | Registre maintenu à jour |
+| ÉFVP réalisée | Partiel | Manque pour nouveaux traitements |
+| Responsable désigné | Conforme | Coordonnées publiées |
+| Mesures de sécurité | Partiel | Chiffrement incomplet |
+| Notification 72h | Conforme | Procédure en place |
 
 **Recommandations:**
 1. [Recommandation #1]
@@ -353,29 +353,29 @@ function processInput(userInput: unknown) {
 
 ---
 
-## 🛠️ Plan de Remédiation
+## Plan de Remédiation
 
 ### Timeline Recommandé
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  IMMÉDIAT (0-24h)                                           │
-│  ├─ [CRITICAL-001] [Description courte]                     │
-│  └─ [CRITICAL-002] [Description courte]                     │
+│ IMMÉDIAT (0-24h) │
+│ ├─ [CRITICAL-001] [Description courte] │
+│ └─ [CRITICAL-002] [Description courte] │
 ├─────────────────────────────────────────────────────────────┤
-│  COURT TERME (1-7 jours)                                    │
-│  ├─ [HIGH-001] [Description courte]                         │
-│  ├─ [HIGH-002] [Description courte]                         │
-│  └─ [MEDIUM-001] [Description courte]                       │
+│ COURT TERME (1-7 jours) │
+│ ├─ [HIGH-001] [Description courte] │
+│ ├─ [HIGH-002] [Description courte] │
+│ └─ [MEDIUM-001] [Description courte] │
 ├─────────────────────────────────────────────────────────────┤
-│  MOYEN TERME (1-4 semaines)                                 │
-│  ├─ [MEDIUM-002] [Description courte]                       │
-│  ├─ [MEDIUM-003] [Description courte]                       │
-│  └─ [LOW-001] [Description courte]                          │
+│ MOYEN TERME (1-4 semaines) │
+│ ├─ [MEDIUM-002] [Description courte] │
+│ ├─ [MEDIUM-003] [Description courte] │
+│ └─ [LOW-001] [Description courte] │
 ├─────────────────────────────────────────────────────────────┤
-│  LONG TERME (1-3 mois)                                      │
-│  ├─ [LOW-002] [Description courte]                          │
-│  └─ Améliorations continues                                 │
+│ LONG TERME (1-3 mois) │
+│ ├─ [LOW-002] [Description courte] │
+│ └─ Améliorations continues │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -390,67 +390,67 @@ function processInput(userInput: unknown) {
 
 ---
 
-## 📈 Comparaison avec Audit Précédent
+## Comparaison avec Audit Précédent
 
 ### Évolution du Score
 
 ```
 Audit Précédent (Q2 2024): 68/100
-Audit Actuel (Q4 2024):     75/100
+Audit Actuel (Q4 2024): 75/100
 
 Amélioration: +7 points (+10.3%)
 
-   Q2 2024  ████████████████████░░░░░░░░░░  68%
-   Q4 2024  ██████████████████████░░░░░░░░  75%
-            └─────────────────────────────┘
-            0%                         100%
+ Q2 2024 ████████████████████░░░░░░░░░░ 68%
+ Q4 2024 ██████████████████████░░░░░░░░ 75%
+ └─────────────────────────────┘
+ 0% 100%
 ```
 
 ### Évolution des Vulnérabilités
 
 | Criticité | Q2 2024 | Q4 2024 | Évolution |
 |-----------|---------|---------|-----------|
-| CRITICAL | 1 | 0 | ✅ -100% |
-| HIGH | 5 | 2 | ✅ -60% |
-| MEDIUM | 8 | 5 | ✅ -37.5% |
-| LOW | 4 | 6 | ⚠️ +50% |
+| CRITICAL | 1 | 0 | -100% |
+| HIGH | 5 | 2 | -60% |
+| MEDIUM | 8 | 5 | -37.5% |
+| LOW | 4 | 6 | +50% |
 
 **Analyse:**
-- ✅ **Positif:** Élimination des vulnérabilités critiques
-- ✅ **Positif:** Réduction significative des vulnérabilités HIGH
-- ⚠️ **À surveiller:** Augmentation des vulnérabilités LOW
+- **Positif:** Élimination des vulnérabilités critiques
+- **Positif:** Réduction significative des vulnérabilités HIGH
+- **À surveiller:** Augmentation des vulnérabilités LOW
 
 ---
 
-## ✅ Points Forts
+## Points Forts
 
 1. **[Point Fort #1]**
-   - [Description]
-   - [Impact positif]
+ - [Description]
+ - [Impact positif]
 
 2. **[Point Fort #2]**
-   - [Description]
-   - [Impact positif]
+ - [Description]
+ - [Impact positif]
 
 3. **[Point Fort #3]**
-   - [Description]
-   - [Impact positif]
+ - [Description]
+ - [Impact positif]
 
 ---
 
-## ⚠️ Points d'Amélioration
+## Points d'Amélioration
 
 1. **[Point d'Amélioration #1]**
-   - [Description]
-   - [Recommandation]
+ - [Description]
+ - [Recommandation]
 
 2. **[Point d'Amélioration #2]**
-   - [Description]
-   - [Recommandation]
+ - [Description]
+ - [Recommandation]
 
 ---
 
-## 📚 Annexes
+## Annexes
 
 ### Annexe A: Méthodologie Détaillée
 
@@ -488,7 +488,7 @@ Amélioration: +7 points (+10.3%)
 
 ---
 
-## 📝 Signatures
+## Signatures
 
 ### Auditeur
 

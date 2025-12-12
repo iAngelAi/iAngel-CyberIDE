@@ -1,8 +1,8 @@
-# ✅ Checklist de Conformité — CyberIDE
+# Checklist de Conformité - CyberIDE
 
 <div align="center">
 
-**Version 1.0.0** | Dernière mise à jour: Décembre 2024
+**Version 1.0.0** | Dernière mise à jour: 2024-12
 
 *Guide pratique pour assurer la conformité avec Loi 25, PIPEDA et RGPD*
 
@@ -10,19 +10,19 @@
 
 ---
 
-## 📋 Vue d'Ensemble
+## Vue d'Ensemble
 
 Cette checklist permet de vérifier la conformité du CyberIDE avec les principales réglementations sur la protection des données personnelles applicables au Canada et à l'Union Européenne.
 
 **Fréquence d'utilisation:**
-- ✅ Avant chaque release majeure
-- ✅ Trimestriellement (audit interne)
-- ✅ Annuellement (audit complet)
-- ✅ Après modification des flux de données personnelles
+- Avant chaque release majeure
+- Trimestriellement (audit interne)
+- Annuellement (audit complet)
+- Après modification des flux de données personnelles
 
 ---
 
-## 🇨🇦 Loi 25 (Québec) — Protection des Renseignements Personnels
+## Loi 25 (Québec) - Protection des Renseignements Personnels
 
 ### Gouvernance et Documentation
 
@@ -126,7 +126,7 @@ Cette checklist permet de vérifier la conformité du CyberIDE avec les principa
 
 ---
 
-## 🇨🇦 PIPEDA (Canada) — Protection des Renseignements Personnels
+## PIPEDA (Canada) — Protection des Renseignements Personnels
 
 ### 10 Principes de PIPEDA
 
@@ -199,7 +199,7 @@ Cette checklist permet de vérifier la conformité du CyberIDE avec les principa
 
 ---
 
-## 🇪🇺 RGPD (Union Européenne) — Règlement Général sur la Protection des Données
+## RGPD (Union Européenne) — Règlement Général sur la Protection des Données
 
 ### Applicabilité
 
@@ -369,7 +369,7 @@ Cette checklist permet de vérifier la conformité du CyberIDE avec les principa
 
 ---
 
-## 🤖 Sécurité Spécifique à l'IA et aux Modèles
+## Sécurité Spécifique à l'IA et aux Modèles
 
 ### AI Act (Union Européenne) — Préparation
 
@@ -463,7 +463,7 @@ Pour chaque item non conforme:
 
 ---
 
-## 📊 Tableau de Bord de Conformité
+## Tableau de Bord de Conformité
 
 | Domaine | Items | Conformes | Non-Conformes | % Conformité |
 |---------|-------|-----------|---------------|--------------|
@@ -474,7 +474,7 @@ Pour chaque item non conforme:
 | **Documentation** | 15 | 1 | 14 | 7% |
 | **TOTAL** | **123** | **1** | **122** | **1%** |
 
-**Objectif:** ✅ 100% de conformité avant mise en production
+**Objectif:** 100% de conformité avant mise en production
 
 ---
 
@@ -503,12 +503,12 @@ Pour chaque item non conforme:
 
 <div align="center">
 
-**✅ Conformité = Confiance ✅**
+**Conformité = Confiance**
 
 *"Privacy is not an option, it's a fundamental right."*
 
 ---
 
-**Développé avec 🔒 par [iAngelAi](https://github.com/iAngelAi)**
+**Développé par [iAngelAi](https://github.com/iAngelAi)**
 
 </div>

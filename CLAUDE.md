@@ -15,7 +15,7 @@
 
 ---
 
-## 🎯 Contexte du Projet CyberIDE
+## Contexte du Projet CyberIDE
 
 **Type** : Projet **PERSONNEL** (pas de contraintes Loi 25/PIPEDA)
 
@@ -176,10 +176,10 @@ Les règles ci-dessous sont conformes aux standards globaux définis dans `~/.cl
 - ✅ Génériques pour flexibilité typée
 
 ```typescript
-// ❌ INTERDIT
+// INTERDIT
 const data = response as NeuralStatus;
 
-// ✅ OBLIGATOIRE
+// OBLIGATOIRE
 import { z } from "zod";
 const NeuralStatusSchema = z.object({...});
 const result = NeuralStatusSchema.safeParse(response);

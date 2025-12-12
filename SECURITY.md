@@ -1,4 +1,4 @@
-# 🛡️ Politique de Sécurité — CyberIDE Neural Architect
+# Politique de Sécurité — CyberIDE Neural Architect
 
 <div align="center">
 
@@ -15,7 +15,7 @@
 
 ---
 
-## 📋 Table des Matières
+## Table des Matières
 
 1. [Vue d'Ensemble](#vue-densemble)
 2. [Principes Fondamentaux](#principes-fondamentaux)
@@ -30,7 +30,7 @@
 
 ---
 
-## 🎯 Vue d'Ensemble
+## Vue d'Ensemble
 
 ### Mission de Sécurité
 
@@ -50,15 +50,15 @@ CyberIDE est un environnement de développement avec visualisation 3D neural qui
 
 Cette politique s'applique à:
 
-- ✅ Tous les composants du CyberIDE (frontend React, backend FastAPI)
-- ✅ Tous les agents de l'architecture multi-agents (13 agents spécialisés)
-- ✅ Toutes les intégrations externes (APIs, services tiers)
-- ✅ Tous les environnements (développement, staging, production)
-- ✅ Tous les contributeurs (employés, contractuels, contributeurs open-source)
+- Tous les composants du CyberIDE (frontend React, backend FastAPI)
+- Tous les agents de l'architecture multi-agents (13 agents spécialisés)
+- Toutes les intégrations externes (APIs, services tiers)
+- Tous les environnements (développement, staging, production)
+- Tous les contributeurs (employés, contractuels, contributeurs open-source)
 
 ---
 
-## 🏛️ Principes Fondamentaux
+## Principes Fondamentaux
 
 ### 1. Security by Design
 
@@ -96,23 +96,23 @@ La sécurité est intégrée dès la conception de chaque fonctionnalité.
 Les données personnelles sont protégées par défaut, sans action requise de l'utilisateur.
 
 **Principes appliqués:**
-- ✅ Minimisation des données (ne collecter que le nécessaire)
-- ✅ Limitation de la finalité (usage explicite et légitime)
-- ✅ Limitation de la conservation (durée minimale)
-- ✅ Pseudonymisation / Anonymisation par défaut
-- ✅ Chiffrement au repos et en transit
+- Minimisation des données (ne collecter que le nécessaire)
+- Limitation de la finalité (usage explicite et légitime)
+- Limitation de la conservation (durée minimale)
+- Pseudonymisation / Anonymisation par défaut
+- Chiffrement au repos et en transit
 
 ### 3. Shift-Left Security
 
 La sécurité commence dès la première ligne de code, pas à la fin du projet.
 
 ```typescript
-// ❌ INTERDIT - Validation absente
+//**INTERDIT:** INTERDIT - Validation absente
 function processUserData(data: any) {
   return saveToDatabase(data);
 }
 
-// ✅ REQUIS - Validation dès l'entrée
+//**REQUIS:** REQUIS - Validation dès l'entrée
 import { z } from "zod";
 
 const UserDataSchema = z.object({
@@ -171,15 +171,15 @@ Multiple couches de sécurité pour protéger contre les défaillances individue
 
 Ne jamais faire confiance, toujours vérifier.
 
-- 🔒 Authentification requise pour toutes les opérations sensibles
-- 🔒 Autorisation granulaire (principe du moindre privilège)
-- 🔒 Validation systématique des entrées, même internes
-- 🔒 Chiffrement bout-en-bout pour les données sensibles
-- 🔒 Logs d'audit pour toutes les actions critiques
+-  Authentification requise pour toutes les opérations sensibles
+-  Autorisation granulaire (principe du moindre privilège)
+-  Validation systématique des entrées, même internes
+-  Chiffrement bout-en-bout pour les données sensibles
+-  Logs d'audit pour toutes les actions critiques
 
 ---
 
-## 🏗️ Architecture de Sécurité
+##  Architecture de Sécurité
 
 ### Vue d'Ensemble de l'Architecture
 
@@ -260,11 +260,11 @@ jobs:
         run: npx license-checker --summary
 ```
 
-**Règle absolue:** ❌ Aucun déploiement sans scan de sécurité réussi.
+**Règle absolue:**INTERDIT:** Aucun déploiement sans scan de sécurité réussi.
 
 ---
 
-## 💻 Sécurité du Code
+##  Sécurité du Code
 
 ### TypeScript — Standards Stricts
 
@@ -290,18 +290,18 @@ jobs:
 #### Anti-Patterns Interdits
 
 ```typescript
-// ❌ INTERDIT - Type 'any'
+//**INTERDIT:** INTERDIT - Type 'any'
 function handleResponse(response: any) {
   return response.data;
 }
 
-// ❌ INTERDIT - Cast 'as' sans validation
+//**INTERDIT:** INTERDIT - Cast 'as' sans validation
 const user = apiResponse as User;
 
-// ❌ INTERDIT - Non-null assertion sans validation
+//**INTERDIT:** INTERDIT - Non-null assertion sans validation
 const element = document.getElementById('root')!;
 
-// ✅ REQUIS - Typage strict avec validation
+//**REQUIS:** REQUIS - Typage strict avec validation
 import { z } from "zod";
 
 const ApiResponseSchema = z.object({
@@ -314,7 +314,7 @@ function handleResponse(response: unknown): unknown {
   return validated.data;
 }
 
-// ✅ REQUIS - Validation Zod complète
+//**REQUIS:** REQUIS - Validation Zod complète
 const UserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
@@ -327,7 +327,7 @@ function processUser(input: unknown): User {
   return UserSchema.parse(input);
 }
 
-// ✅ REQUIS - Vérification null explicite
+//**REQUIS:** REQUIS - Vérification null explicite
 const element = document.getElementById('root');
 if (!element) {
   throw new Error('Root element not found');
@@ -337,13 +337,13 @@ if (!element) {
 #### Protection XSS (Cross-Site Scripting)
 
 ```typescript
-// ❌ INTERDIT - innerHTML avec données non sanitisées
+//**INTERDIT:** INTERDIT - innerHTML avec données non sanitisées
 element.innerHTML = userInput;
 
-// ✅ REQUIS - Utilisation de textContent
+//**REQUIS:** REQUIS - Utilisation de textContent
 element.textContent = userInput;
 
-// ✅ REQUIS - Si HTML nécessaire, utiliser DOMPurify
+//**REQUIS:** REQUIS - Si HTML nécessaire, utiliser DOMPurify
 import DOMPurify from 'dompurify';
 
 element.innerHTML = DOMPurify.sanitize(userInput, {
@@ -397,21 +397,21 @@ line-length = 100
 #### Bonnes Pratiques de Code
 
 ```python
-# ❌ INTERDIT - Pas de type hints
+#**INTERDIT:** INTERDIT - Pas de type hints
 def process_data(data):
     return data['value']
 
-# ❌ INTERDIT - Type dict générique
+#**INTERDIT:** INTERDIT - Type dict générique
 def save_user(user: dict) -> None:
     database.save(user)
 
-# ❌ INTERDIT - Exception générique
+#**INTERDIT:** INTERDIT - Exception générique
 try:
     risky_operation()
 except Exception:
     pass
 
-# ✅ REQUIS - Type hints complets
+#**REQUIS:** REQUIS - Type hints complets
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, EmailStr
 
@@ -427,7 +427,7 @@ def process_user_data(user: User) -> Dict[str, str]:
         "email": user.email,
     }
 
-# ✅ REQUIS - Exceptions nommées
+#**REQUIS:** REQUIS - Exceptions nommées
 class DatabaseError(Exception):
     """Raised when database operation fails."""
     pass
@@ -449,15 +449,15 @@ except ValidationError as e:
 #### Protection Injection SQL
 
 ```python
-# ❌ INTERDIT - Concaténation de strings SQL
+#**INTERDIT:** INTERDIT - Concaténation de strings SQL
 query = f"SELECT * FROM users WHERE email = '{user_email}'"
 cursor.execute(query)
 
-# ✅ REQUIS - Requêtes paramétrées
+#**REQUIS:** REQUIS - Requêtes paramétrées
 query = "SELECT * FROM users WHERE email = ?"
 cursor.execute(query, (user_email,))
 
-# ✅ REQUIS - ORM avec validation (Drizzle/SQLAlchemy)
+#**REQUIS:** REQUIS - ORM avec validation (Drizzle/SQLAlchemy)
 from sqlalchemy import select
 from models import User
 
@@ -473,10 +473,10 @@ from typing import Any, Dict
 
 logger = structlog.get_logger()
 
-# ❌ INTERDIT - Log de PII en clair
+#**INTERDIT:** INTERDIT - Log de PII en clair
 logger.info(f"User {email} logged in with password {password}")
 
-# ✅ REQUIS - Masquage des PII
+#**REQUIS:** REQUIS - Masquage des PII
 def mask_email(email: str) -> str:
     """Mask email address for logging."""
     if '@' not in email:
@@ -493,7 +493,7 @@ logger.info(
     # password n'est JAMAIS loggé
 )
 
-# ✅ REQUIS - Structured logging avec contexte
+#**REQUIS:** REQUIS - Structured logging avec contexte
 logger.info(
     "api_request",
     endpoint="/api/users",
@@ -506,7 +506,7 @@ logger.info(
 
 ---
 
-## 📦 Gestion des Dépendances
+## Gestion des Dépendances
 
 ### Supply Chain Security
 
@@ -559,25 +559,25 @@ snyk test --file=requirements.txt
 #### Criticité CRITIQUE ou HIGH
 
 - ⏰ **Action immédiate** (< 24h)
-- 🔒 **Patch ou upgrade** vers version sécurisée
-- 🚫 **Blocage de déploiement** tant que non résolu
-- 📝 **Post-mortem** si exploitée
+-  **Patch ou upgrade** vers version sécurisée
+-  **Blocage de déploiement** tant que non résolu
+-  **Post-mortem** si exploitée
 
 #### Criticité MODERATE
 
 - ⏰ **Action rapide** (< 48h)
-- 🔄 **Update planifiée** dans prochain cycle
-- ⚠️ **Warning** dans CI/CD mais pas de blocage
+-  **Update planifiée** dans prochain cycle
+-  **Warning** dans CI/CD mais pas de blocage
 
 #### Criticité LOW
 
 - ⏰ **Action différée** (< 1 semaine)
-- 📊 **Tracking** dans backlog
+-  **Tracking** dans backlog
 - 🔍 **Réévaluation** si contexte change
 
 ---
 
-## 🔐 Sécurité des Données
+## Sécurité des Données
 
 ### Classification des Données
 
@@ -594,14 +594,14 @@ snyk test --file=requirements.txt
 #### Chiffrement en Transit
 
 ```typescript
-// ✅ REQUIS - HTTPS/TLS 1.3 uniquement
+//**REQUIS:** REQUIS - HTTPS/TLS 1.3 uniquement
 const API_URL = import.meta.env.VITE_API_URL;
 
 if (!API_URL.startsWith('https://') && import.meta.env.PROD) {
   throw new Error('HTTPS required in production');
 }
 
-// ✅ REQUIS - WebSocket Secure (wss://)
+//**REQUIS:** REQUIS - WebSocket Secure (wss://)
 const wsUrl = API_URL.replace('https://', 'wss://');
 const socket = new WebSocket(wsUrl);
 ```
@@ -609,7 +609,7 @@ const socket = new WebSocket(wsUrl);
 #### Chiffrement au Repos
 
 ```python
-# ✅ REQUIS - Chiffrement AES-256 pour données sensibles
+#**REQUIS:** REQUIS - Chiffrement AES-256 pour données sensibles
 from cryptography.fernet import Fernet
 from typing import bytes
 
@@ -633,22 +633,22 @@ encryptor = DataEncryption(encryption_key.encode())
 
 ### Gestion des Secrets
 
-#### ❌ Interdictions Absolues
+####**INTERDIT:** Interdictions Absolues
 
 ```bash
-# ❌ JAMAIS commiter de secrets
+#**INTERDIT:** JAMAIS commiter de secrets
 API_KEY=sk-1234567890abcdef
 DATABASE_URL=postgresql://user:password@localhost/db
 
-# ❌ JAMAIS de secrets dans le code
+#**INTERDIT:** JAMAIS de secrets dans le code
 const apiKey = "sk-1234567890abcdef";
 const password = "admin123";
 ```
 
-#### ✅ Bonnes Pratiques
+####**REQUIS:** Bonnes Pratiques
 
 ```bash
-# ✅ Variables d'environnement
+#**REQUIS:** Variables d'environnement
 # .env (NON versionné, dans .gitignore)
 API_KEY=${SECRET_API_KEY}
 DATABASE_URL=${SECRET_DATABASE_URL}
@@ -659,14 +659,14 @@ DATABASE_URL=postgresql://user:pass@host/db
 ```
 
 ```typescript
-// ✅ Accès via variables d'environnement
+//**REQUIS:** Accès via variables d'environnement
 const apiKey = import.meta.env.VITE_API_KEY;
 
 if (!apiKey) {
   throw new Error('VITE_API_KEY environment variable is required');
 }
 
-// ✅ Validation de format
+//**REQUIS:** Validation de format
 if (!apiKey.startsWith('sk-') || apiKey.length < 32) {
   throw new Error('Invalid API key format');
 }
@@ -704,7 +704,7 @@ if (!apiKey.startsWith('sk-') || apiKey.length < 32) {
 #### Minimisation des Données
 
 ```python
-# ❌ INTERDIT - Collecter plus que nécessaire
+#**INTERDIT:** INTERDIT - Collecter plus que nécessaire
 class User(BaseModel):
     email: EmailStr
     password: str
@@ -712,9 +712,9 @@ class User(BaseModel):
     age: int
     address: str
     phone: str
-    social_security_number: str  # ❌ Non nécessaire
+    social_security_number: str  #**INTERDIT:** Non nécessaire
 
-# ✅ REQUIS - Collecter uniquement le nécessaire
+#**REQUIS:** REQUIS - Collecter uniquement le nécessaire
 class User(BaseModel):
     id: str
     email: EmailStr  # Nécessaire pour auth
@@ -727,18 +727,18 @@ class User(BaseModel):
 
 ---
 
-## 🚀 Infrastructure et Déploiement
+##  Infrastructure et Déploiement
 
 ### Infrastructure as Code (IaC)
 
-**Règle:** ❌ Aucune configuration manuelle en production.
+**Règle:**INTERDIT:** Aucune configuration manuelle en production.
 
 ```hcl
 # Exemple Terraform
 resource "aws_s3_bucket" "data" {
   bucket = "cyberide-data"
   
-  # ✅ Chiffrement obligatoire
+  #**REQUIS:** Chiffrement obligatoire
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -747,18 +747,18 @@ resource "aws_s3_bucket" "data" {
     }
   }
   
-  # ✅ Blocage accès public
+  #**REQUIS:** Blocage accès public
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
   
-  # ✅ Versioning activé
+  #**REQUIS:** Versioning activé
   versioning {
     enabled = true
   }
   
-  # ✅ Logging activé
+  #**REQUIS:** Logging activé
   logging {
     target_bucket = aws_s3_bucket.logs.id
     target_prefix = "s3-access-logs/"
@@ -782,19 +782,19 @@ app = FastAPI()
 async def add_security_headers(request, call_next):
     response = await call_next(request)
     
-    # ✅ Strict-Transport-Security (HSTS)
+    #**REQUIS:** Strict-Transport-Security (HSTS)
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     
-    # ✅ X-Frame-Options (Clickjacking protection)
+    #**REQUIS:** X-Frame-Options (Clickjacking protection)
     response.headers["X-Frame-Options"] = "DENY"
     
-    # ✅ X-Content-Type-Options
+    #**REQUIS:** X-Content-Type-Options
     response.headers["X-Content-Type-Options"] = "nosniff"
     
-    # ✅ X-XSS-Protection
+    #**REQUIS:** X-XSS-Protection
     response.headers["X-XSS-Protection"] = "1; mode=block"
     
-    # ✅ Content-Security-Policy
+    #**REQUIS:** Content-Security-Policy
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
@@ -804,15 +804,15 @@ async def add_security_headers(request, call_next):
         "connect-src 'self' wss://localhost:8000"
     )
     
-    # ✅ Referrer-Policy
+    #**REQUIS:** Referrer-Policy
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     
-    # ✅ Permissions-Policy
+    #**REQUIS:** Permissions-Policy
     response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
     
     return response
 
-# ✅ CORS configuration stricte
+#**REQUIS:** CORS configuration stricte
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],  # Spécifique, pas '*'
@@ -847,7 +847,7 @@ async def analyze_project(request: Request):
 
 ---
 
-## 🚨 Gestion des Incidents
+## Gestion des Incidents
 
 ### Définition d'un Incident de Sécurité
 
@@ -929,7 +929,7 @@ Un incident de sécurité est tout événement qui:
 
 ---
 
-## 🔍 Audit et Conformité
+## Audit et Conformité
 
 ### Programme d'Audit
 
@@ -956,7 +956,7 @@ Voir [COMPLIANCE_CHECKLIST.md](./COMPLIANCE_CHECKLIST.md) pour la checklist dét
 
 ---
 
-## 📢 Signalement de Vulnérabilités
+##  Signalement de Vulnérabilités
 
 ### Programme de Divulgation Responsable
 
@@ -1000,24 +1000,24 @@ Nous encourageons les chercheurs en sécurité à signaler de manière responsab
 
 #### Ce que Nous Nous Engageons à Faire
 
-1. ✅ **Accusé de réception** dans les **24 heures**
-2. ✅ **Évaluation initiale** dans les **72 heures**
-3. ✅ **Mise à jour régulière** sur le statut de correction
-4. ✅ **Crédit public** si désiré (Hall of Fame)
-5. ✅ **Notification** quand le patch est déployé
+1.**REQUIS:** **Accusé de réception** dans les **24 heures**
+2.**REQUIS:** **Évaluation initiale** dans les **72 heures**
+3.**REQUIS:** **Mise à jour régulière** sur le statut de correction
+4.**REQUIS:** **Crédit public** si désiré (Hall of Fame)
+5.**REQUIS:** **Notification** quand le patch est déployé
 
 #### Ce que Nous Demandons aux Chercheurs
 
 1. ⏰ Donner un délai raisonnable (90 jours) avant divulgation publique
-2. 🙊 Ne pas divulguer publiquement avant correction
-3. 🚫 Ne pas exploiter la vulnérabilité au-delà de la preuve de concept
-4. 🚫 Ne pas accéder, modifier ou supprimer de données
-5. 🚫 Ne pas effectuer d'attaque DoS/DDoS
-6. 🤝 Agir de bonne foi
+2.  Ne pas divulguer publiquement avant correction
+3.  Ne pas exploiter la vulnérabilité au-delà de la preuve de concept
+4.  Ne pas accéder, modifier ou supprimer de données
+5.  Ne pas effectuer d'attaque DoS/DDoS
+6.  Agir de bonne foi
 
 ---
 
-## 📚 Ressources et Références
+##  Ressources et Références
 
 ### Standards et Frameworks
 
@@ -1055,7 +1055,7 @@ Nous encourageons les chercheurs en sécurité à signaler de manière responsab
 
 ---
 
-## 🔄 Mises à Jour de Cette Politique
+##  Mises à Jour de Cette Politique
 
 Cette politique de sécurité est un document vivant qui évolue avec les menaces, les technologies et les réglementations.
 
@@ -1078,12 +1078,12 @@ Cette politique de sécurité est un document vivant qui évolue avec les menace
 
 <div align="center">
 
-**🛡️ La sécurité est l'affaire de tous 🛡️**
+** La sécurité est l'affaire de tous **
 
 *"No test = No light. No security = No trust."*
 
 ---
 
-**Développé avec 🔒 par [iAngelAi](https://github.com/iAngelAi)**
+**Développé avec  par [iAngelAi](https://github.com/iAngelAi)**
 
 </div>

@@ -1,4 +1,4 @@
-# 🚨 Guide de Réponse aux Incidents de Sécurité — CyberIDE
+# Guide de Réponse aux Incidents de Sécurité — CyberIDE
 
 <div align="center">
 
@@ -10,7 +10,7 @@
 
 ---
 
-## 📋 Vue d'Ensemble
+## Vue d'Ensemble
 
 Ce guide définit les procédures à suivre en cas d'incident de sécurité affectant le CyberIDE.
 
@@ -22,7 +22,7 @@ Ce guide définit les procédures à suivre en cas d'incident de sécurité affe
 
 ---
 
-## 🎯 Définition d'un Incident de Sécurité
+## Définition d'un Incident de Sécurité
 
 Un incident de sécurité est tout événement qui:
 - Compromet la **confidentialité** des données
@@ -66,126 +66,126 @@ Un incident de sécurité est tout événement qui:
 
 ```yaml
 incident_response_team:
-  lead:
-    name: "Security Lead"
-    email: "security@iangelai.com"
-    phone: "+1-XXX-XXX-XXXX"
-    role: "Coordination générale"
-  
-  technical_lead:
-    name: "DevSecOps Engineer"
-    email: "devsecops@iangelai.com"
-    phone: "+1-XXX-XXX-XXXX"
-    role: "Investigation technique"
-  
-  communications:
-    name: "Communications Lead"
-    email: "comms@iangelai.com"
-    phone: "+1-XXX-XXX-XXXX"
-    role: "Communication interne/externe"
+ lead:
+ name: "Security Lead"
+ email: "security@iangelai.com"
+ phone: "+1-XXX-XXX-XXXX"
+ role: "Coordination générale"
+ 
+ technical_lead:
+ name: "DevSecOps Engineer"
+ email: "devsecops@iangelai.com"
+ phone: "+1-XXX-XXX-XXXX"
+ role: "Investigation technique"
+ 
+ communications:
+ name: "Communications Lead"
+ email: "comms@iangelai.com"
+ phone: "+1-XXX-XXX-XXXX"
+ role: "Communication interne/externe"
 
 management:
-  cto:
-    name: "CTO"
-    email: "cto@iangelai.com"
-    phone: "+1-XXX-XXX-XXXX"
-  
-  ceo:
-    name: "CEO"
-    email: "ceo@iangelai.com"
-    phone: "+1-XXX-XXX-XXXX"
+ cto:
+ name: "CTO"
+ email: "cto@iangelai.com"
+ phone: "+1-XXX-XXX-XXXX"
+ 
+ ceo:
+ name: "CEO"
+ email: "ceo@iangelai.com"
+ phone: "+1-XXX-XXX-XXXX"
 
 legal:
-  counsel:
-    name: "Legal Counsel"
-    email: "legal@iangelai.com"
-    phone: "+1-XXX-XXX-XXXX"
+ counsel:
+ name: "Legal Counsel"
+ email: "legal@iangelai.com"
+ phone: "+1-XXX-XXX-XXXX"
 
 external:
-  cyber_insurance:
-    company: "Insurance Co"
-    policy: "POL-123456"
-    phone: "1-800-XXX-XXXX"
-  
-  forensics:
-    company: "Forensics Firm"
-    contact: "forensics@firm.com"
-    phone: "+1-XXX-XXX-XXXX"
+ cyber_insurance:
+ company: "Insurance Co"
+ policy: "POL-123456"
+ phone: "1-800-XXX-XXXX"
+ 
+ forensics:
+ company: "Forensics Firm"
+ contact: "forensics@firm.com"
+ phone: "+1-XXX-XXX-XXXX"
 ```
 
 ### Autorités (Notification Légale)
 
 ```yaml
 authorities:
-  loi25_quebec:
-    name: "Commission d'accès à l'information du Québec (CAI)"
-    email: "caiq@caiq.qc.ca"
-    phone: "1-888-528-7741"
-    notification_deadline: "72 heures"
-    website: "https://www.cai.gouv.qc.ca"
-  
-  pipeda_canada:
-    name: "Commissariat à la protection de la vie privée du Canada"
-    email: "info@priv.gc.ca"
-    phone: "1-800-282-1376"
-    notification_deadline: "dès que possible"
-    website: "https://www.priv.gc.ca"
-  
-  gdpr_eu:
-    name: "Autorité de contrôle UE (selon pays)"
-    notification_deadline: "72 heures"
-    website: "https://edpb.europa.eu/about-edpb/about-edpb/members_en"
+ loi25_quebec:
+ name: "Commission d'accès à l'information du Québec (CAI)"
+ email: "caiq@caiq.qc.ca"
+ phone: "1-888-528-7741"
+ notification_deadline: "72 heures"
+ website: "https://www.cai.gouv.qc.ca"
+ 
+ pipeda_canada:
+ name: "Commissariat à la protection de la vie privée du Canada"
+ email: "info@priv.gc.ca"
+ phone: "1-800-282-1376"
+ notification_deadline: "dès que possible"
+ website: "https://www.priv.gc.ca"
+ 
+ gdpr_eu:
+ name: "Autorité de contrôle UE (selon pays)"
+ notification_deadline: "72 heures"
+ website: "https://edpb.europa.eu/about-edpb/about-edpb/members_en"
 ```
 
 ---
 
-## 🔄 Processus de Réponse aux Incidents
+## Processus de Réponse aux Incidents
 
 ### Vue d'Ensemble (PICERL)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ P: PREPARATION                                              │
-│ ├─ Documentation et procédures                              │
-│ ├─ Formation de l'équipe                                    │
-│ ├─ Outils et accès préparés                                 │
-│ └─ Exercices réguliers (tabletop)                           │
+│ P: PREPARATION │
+│ ├─ Documentation et procédures │
+│ ├─ Formation de l'équipe │
+│ ├─ Outils et accès préparés │
+│ └─ Exercices réguliers (tabletop) │
 ├─────────────────────────────────────────────────────────────┤
-│ I: IDENTIFICATION (0-30 min)                                │
-│ ├─ Détection de l'incident                                  │
-│ ├─ Validation (vrai incident?)                              │
-│ ├─ Classification de criticité                              │
-│ └─ Activation de l'IRT                                      │
+│ I: IDENTIFICATION (0-30 min) │
+│ ├─ Détection de l'incident │
+│ ├─ Validation (vrai incident?) │
+│ ├─ Classification de criticité │
+│ └─ Activation de l'IRT │
 ├─────────────────────────────────────────────────────────────┤
-│ C: CONFINEMENT (30 min - 2h)                                │
-│ ├─ Isolation des systèmes affectés                          │
-│ ├─ Préservation des preuves                                 │
-│ ├─ Mitigation temporaire                                    │
-│ └─ Communication initiale (interne)                         │
+│ C: CONFINEMENT (30 min - 2h) │
+│ ├─ Isolation des systèmes affectés │
+│ ├─ Préservation des preuves │
+│ ├─ Mitigation temporaire │
+│ └─ Communication initiale (interne) │
 ├─────────────────────────────────────────────────────────────┤
-│ E: ÉRADICATION (2h - 24h)                                   │
-│ ├─ Identification cause racine                              │
-│ ├─ Suppression de la menace                                 │
-│ ├─ Patching/Correction                                      │
-│ └─ Validation complète                                      │
+│ E: ÉRADICATION (2h - 24h) │
+│ ├─ Identification cause racine │
+│ ├─ Suppression de la menace │
+│ ├─ Patching/Correction │
+│ └─ Validation complète │
 ├─────────────────────────────────────────────────────────────┤
-│ R: RÉCUPÉRATION (24h - 72h)                                 │
-│ ├─ Restauration des services                                │
-│ ├─ Validation de sécurité                                   │
-│ ├─ Monitoring intensif                                      │
-│ └─ Communication de rétablissement                          │
+│ R: RÉCUPÉRATION (24h - 72h) │
+│ ├─ Restauration des services │
+│ ├─ Validation de sécurité │
+│ ├─ Monitoring intensif │
+│ └─ Communication de rétablissement │
 ├─────────────────────────────────────────────────────────────┤
-│ L: LESSONS LEARNED (< 1 semaine)                            │
-│ ├─ Post-mortem détaillé                                     │
-│ ├─ Documentation des learnings                              │
-│ ├─ Mise à jour des procédures                               │
-│ └─ Formation supplémentaire si nécessaire                   │
+│ L: LESSONS LEARNED (< 1 semaine) │
+│ ├─ Post-mortem détaillé │
+│ ├─ Documentation des learnings │
+│ ├─ Mise à jour des procédures │
+│ └─ Formation supplémentaire si nécessaire │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🔍 PHASE 1: IDENTIFICATION
+## PHASE 1: IDENTIFICATION
 
 ### 1.1 Sources de Détection
 
@@ -236,18 +236,18 @@ DESCRIPTION=$2
 
 # Slack
 curl -X POST https://hooks.slack.com/services/YOUR/WEBHOOK/URL \
-  -H 'Content-Type: application/json' \
-  -d "{
-    \"text\": \"🚨 SECURITY INCIDENT - ${SEVERITY}\",
-    \"attachments\": [{
-      \"color\": \"danger\",
-      \"fields\": [{
-        \"title\": \"Description\",
-        \"value\": \"${DESCRIPTION}\",
-        \"short\": false
-      }]
-    }]
-  }"
+ -H 'Content-Type: application/json' \
+ -d "{
+ \"text\": \" SECURITY INCIDENT - ${SEVERITY}\",
+ \"attachments\": [{
+ \"color\": \"danger\",
+ \"fields\": [{
+ \"title\": \"Description\",
+ \"value\": \"${DESCRIPTION}\",
+ \"short\": false
+ }]
+ }]
+ }"
 
 # Email
 python3 << EOF
@@ -260,37 +260,37 @@ description = os.getenv('DESCRIPTION', 'No description provided')
 smtp_password = os.getenv('SMTP_PASSWORD')
 
 if not smtp_password:
-    print("Warning: SMTP_PASSWORD not set, skipping email")
-    exit(0)
+ print("Warning: SMTP_PASSWORD not set, skipping email")
+ exit(0)
 
 msg = EmailMessage()
-msg['Subject'] = f'🚨 Security Incident - {severity}'
+msg['Subject'] = f' Security Incident - {severity}'
 msg['From'] = 'security@iangelai.com'
 msg['To'] = 'irt@iangelai.com'
 msg.set_content(description)
 
 with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-    smtp.starttls()
-    smtp.login('security@iangelai.com', smtp_password)
-    smtp.send_message(msg)
+ smtp.starttls()
+ smtp.login('security@iangelai.com', smtp_password)
+ smtp.send_message(msg)
 EOF
 
 # SMS (via Twilio)
 # Ensure environment variables are set: TWILIO_SID, TWILIO_TOKEN
 if [ -z "$TWILIO_SID" ] || [ -z "$TWILIO_TOKEN" ]; then
-  echo "Warning: TWILIO_SID or TWILIO_TOKEN not set, skipping SMS"
+ echo "Warning: TWILIO_SID or TWILIO_TOKEN not set, skipping SMS"
 else
-  curl -X POST https://api.twilio.com/2010-04-01/Accounts/$TWILIO_SID/Messages.json \
-    --data-urlencode "Body=SECURITY INCIDENT ${SEVERITY}: ${DESCRIPTION}" \
-    --data-urlencode "From=+1XXX" \
-    --data-urlencode "To=+1XXX" \
-    -u $TWILIO_SID:$TWILIO_TOKEN
+ curl -X POST https://api.twilio.com/2010-04-01/Accounts/$TWILIO_SID/Messages.json \
+ --data-urlencode "Body=SECURITY INCIDENT ${SEVERITY}: ${DESCRIPTION}" \
+ --data-urlencode "From=+1XXX" \
+ --data-urlencode "To=+1XXX" \
+ -u $TWILIO_SID:$TWILIO_TOKEN
 fi
 ```
 
 ---
 
-## 🛡️ PHASE 2: CONFINEMENT
+## PHASE 2: CONFINEMENT
 
 ### 2.1 Confinement Immédiat (Court Terme)
 
@@ -312,8 +312,8 @@ redis-cli KEYS "session:*compromised_user_id*" | xargs redis-cli DEL
 
 # 3. Révoquer tokens API
 curl -X DELETE https://api.cyberide.com/v1/tokens/revoke \
-  -H "Authorization: Bearer $ADMIN_TOKEN" \
-  -d '{"user_id": "compromised_user_id"}'
+ -H "Authorization: Bearer $ADMIN_TOKEN" \
+ -d '{"user_id": "compromised_user_id"}'
 
 # 4. Forcer reset de mot de passe
 python << EOF
@@ -329,22 +329,22 @@ EOF
 # 1. Isoler le serveur du réseau (mais garder accès forensics)
 # Sur AWS
 aws ec2 modify-instance-attribute \
-  --instance-id i-compromised \
-  --groups sg-forensics-only
+ --instance-id i-compromised \
+ --groups sg-forensics-only
 
 # Sur Azure
 az network nsg rule create \
-  --resource-group rg-cyberide \
-  --nsg-name nsg-compromised \
-  --name DenyAllInbound \
-  --priority 100 \
-  --direction Inbound \
-  --access Deny
+ --resource-group rg-cyberide \
+ --nsg-name nsg-compromised \
+ --name DenyAllInbound \
+ --priority 100 \
+ --direction Inbound \
+ --access Deny
 
 # 2. Snapshot pour analyse
 aws ec2 create-snapshot \
-  --volume-id vol-compromised \
-  --description "Forensics snapshot - incident-$(date +%Y%m%d)"
+ --volume-id vol-compromised \
+ --description "Forensics snapshot - incident-$(date +%Y%m%d)"
 
 # 3. Copier logs avant isolation complète
 scp -i forensics.pem ubuntu@compromised:/var/log/* /forensics/$(date +%Y%m%d)/
@@ -355,23 +355,23 @@ scp -i forensics.pem ubuntu@compromised:/var/log/* /forensics/$(date +%Y%m%d)/
 ```bash
 # 1. Activer protection DDoS (Cloudflare, AWS Shield)
 curl -X POST https://api.cloudflare.com/client/v4/zones/$ZONE_ID/settings/ddos_protection \
-  -H "Authorization: Bearer $CF_TOKEN" \
-  -d '{"value": "on"}'
+ -H "Authorization: Bearer $CF_TOKEN" \
+ -d '{"value": "on"}'
 
 # 2. Rate limiting agressif
 curl -X POST https://api.cloudflare.com/client/v4/zones/$ZONE_ID/rate_limits \
-  -H "Authorization: Bearer $CF_TOKEN" \
-  -d '{
-    "threshold": 10,
-    "period": 60,
-    "action": {
-      "mode": "challenge"
-    }
-  }'
+ -H "Authorization: Bearer $CF_TOKEN" \
+ -d '{
+ "threshold": 10,
+ "period": 60,
+ "action": {
+ "mode": "challenge"
+ }
+ }'
 
 # 3. Bloquer IPs suspectes
 cat suspicious_ips.txt | while read ip; do
-  iptables -A INPUT -s $ip -j DROP
+ iptables -A INPUT -s $ip -j DROP
 done
 ```
 
@@ -405,7 +405,7 @@ sudo python3 vol.py -f /proc/kcore linux.pslist > memory_processes.txt
 # 3. Capturer trafic réseau
 tcpdump -i any -w capture.pcap &
 TCPDUMP_PID=$!
-sleep 300  # 5 minutes
+sleep 300 # 5 minutes
 kill $TCPDUMP_PID
 
 # 4. Calculer checksums (intégrité)
@@ -449,7 +449,7 @@ Security Team
 
 ---
 
-## 🎯 PHASE 3: ÉRADICATION
+## PHASE 3: ÉRADICATION
 
 ### 3.1 Analyse de Cause Racine
 
@@ -495,8 +495,8 @@ sudo crontab -l -u www-data
 sudo crontab -r -u www-data
 
 # 5. Vérifier modifications non autorisées
-sudo debsums -c  # Debian/Ubuntu
-sudo rpm -Va  # RedHat/CentOS
+sudo debsums -c # Debian/Ubuntu
+sudo rpm -Va # RedHat/CentOS
 ```
 
 #### Vulnérabilité Applicative
@@ -514,7 +514,7 @@ curl https://api.cyberide.com/health/security-version
 
 # 3. Rescanner avec CodeQL
 gh api /repos/iAngelAi/iAngel-CyberIDE/code-scanning/analyses \
-  --jq '.[] | select(.tool.name=="CodeQL") | {id, created_at, state}'
+ --jq '.[] | select(.tool.name=="CodeQL") | {id, created_at, state}'
 ```
 
 ### 3.3 Renforcement de Sécurité
@@ -522,38 +522,38 @@ gh api /repos/iAngelAi/iAngel-CyberIDE/code-scanning/analyses \
 ```yaml
 # checklist_post_incident.yml
 hardening:
-  - name: "Rotation Secrets"
-    actions:
-      - Rotate all API keys
-      - Rotate database passwords
-      - Rotate JWT secrets
-      - Update .env.example
+ - name: "Rotation Secrets"
+ actions:
+ - Rotate all API keys
+ - Rotate database passwords
+ - Rotate JWT secrets
+ - Update .env.example
 
-  - name: "Access Control Review"
-    actions:
-      - Review all user permissions
-      - Remove unused accounts
-      - Enforce MFA for all admins
-      - Review RBAC policies
+ - name: "Access Control Review"
+ actions:
+ - Review all user permissions
+ - Remove unused accounts
+ - Enforce MFA for all admins
+ - Review RBAC policies
 
-  - name: "Network Segmentation"
-    actions:
-      - Update firewall rules
-      - Restrict database access
-      - Review security groups (AWS)
-      - Update network ACLs
+ - name: "Network Segmentation"
+ actions:
+ - Update firewall rules
+ - Restrict database access
+ - Review security groups (AWS)
+ - Update network ACLs
 
-  - name: "Monitoring Enhancement"
-    actions:
-      - Add alerts for similar patterns
-      - Increase log verbosity
-      - Enable audit logging
-      - Configure SIEM rules
+ - name: "Monitoring Enhancement"
+ actions:
+ - Add alerts for similar patterns
+ - Increase log verbosity
+ - Enable audit logging
+ - Configure SIEM rules
 ```
 
 ---
 
-## ✅ PHASE 4: RÉCUPÉRATION
+## PHASE 4: RÉCUPÉRATION
 
 ### 4.1 Restauration Sécurisée
 
@@ -599,9 +599,9 @@ Dear CyberIDE Users,
 
 Following the security incident reported on [DATE], we are pleased to inform you that:
 
-✅ The incident has been fully resolved
-✅ All services are now operational
-✅ Enhanced security measures are in place
+ The incident has been fully resolved
+ All services are now operational
+ Enhanced security measures are in place
 
 WHAT HAPPENED:
 [Brief, transparent explanation]
@@ -622,7 +622,7 @@ CyberIDE Security Team
 
 ---
 
-## 📝 PHASE 5: LESSONS LEARNED
+## PHASE 5: LESSONS LEARNED
 
 ### 5.1 Post-Mortem Template
 
@@ -687,30 +687,30 @@ DOCS_DIR="/docs/security"
 MAX_AGE_DAYS=90
 
 find $DOCS_DIR -name "*.md" -type f | while read file; do
-  LAST_MODIFIED=$(stat -f "%Sm" -t "%Y-%m-%d" "$file")
-  AGE_DAYS=$(( ($(date +%s) - $(date -j -f "%Y-%m-%d" "$LAST_MODIFIED" +%s)) / 86400 ))
-  
-  if [ $AGE_DAYS -gt $MAX_AGE_DAYS ]; then
-    echo "⚠️  $file not updated in $AGE_DAYS days (> $MAX_AGE_DAYS)"
-  else
-    echo "✅ $file up to date"
-  fi
+ LAST_MODIFIED=$(stat -f "%Sm" -t "%Y-%m-%d" "$file")
+ AGE_DAYS=$(( ($(date +%s) - $(date -j -f "%Y-%m-%d" "$LAST_MODIFIED" +%s)) / 86400 ))
+ 
+ if [ $AGE_DAYS -gt $MAX_AGE_DAYS ]; then
+ echo " $file not updated in $AGE_DAYS days (> $MAX_AGE_DAYS)"
+ else
+ echo " $file up to date"
+ fi
 done
 ```
 
 ---
 
-## 📊 Métriques et KPIs
+## Métriques et KPIs
 
 ### Métriques de Performance
 
 | Métrique | Objectif | Actuel | Status |
 |----------|----------|--------|--------|
-| MTTD (Mean Time To Detect) | < 15 min | 8 min | ✅ |
-| MTTR (Mean Time To Remediate) | < 4h | 3.5h | ✅ |
-| Incidents critiques par mois | 0 | 0 | ✅ |
-| Faux positifs | < 10% | 12% | ⚠️ |
-| Couverture runbooks | 100% | 85% | ⚠️ |
+| MTTD (Mean Time To Detect) | < 15 min | 8 min | |
+| MTTR (Mean Time To Remediate) | < 4h | 3.5h | |
+| Incidents critiques par mois | 0 | 0 | |
+| Faux positifs | < 10% | 12% | |
+| Couverture runbooks | 100% | 85% | |
 
 ### Reporting
 
@@ -742,17 +742,17 @@ template = Template("""
 """)
 
 report = template.render(
-    month="December",
-    year="2024",
-    total=5,
-    critical=0,
-    high=1,
-    medium=2,
-    low=2,
-    top_types=[("Phishing", 2), ("Vuln Scan", 2), ("DDoS", 1)],
-    mttd=8,
-    mttr=3.5,
-    trends_chart="[Chart data]"
+ month="December",
+ year="2024",
+ total=5,
+ critical=0,
+ high=1,
+ medium=2,
+ low=2,
+ top_types=[("Phishing", 2), ("Vuln Scan", 2), ("DDoS", 1)],
+ mttd=8,
+ mttr=3.5,
+ trends_chart="[Chart data]"
 )
 
 print(report)
@@ -760,7 +760,7 @@ print(report)
 
 ---
 
-## 📚 Ressources
+## Ressources
 
 ### Runbooks Détaillés
 
@@ -784,7 +784,7 @@ print(report)
 
 <div align="center">
 
-**🚨 Prepared, Not Scared 🚨**
+** Prepared, Not Scared **
 
 *"It's not if, it's when. Be ready."*
 
