@@ -60,6 +60,7 @@ export const DebugConsole: React.FC<DebugConsoleProps> = ({
             onClick={onClose}
             className="p-1.5 hover:bg-cyber-primary/10 rounded text-cyber-primary/60 hover:text-cyber-primary transition-colors"
             title="Minimize Console"
+            aria-label="Minimize Console"
           >
             <ChevronDown className="w-4 h-4" />
           </button>
@@ -70,6 +71,10 @@ export const DebugConsole: React.FC<DebugConsoleProps> = ({
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-2 text-xs space-y-0.5"
+        role="log"
+        aria-live="polite"
+        aria-label="System Logs"
+        tabIndex={0}
       >
         {logs.length === 0 ? (
           <div className="text-cyber-primary/30 italic p-2">No system events recorded. Waiting for neural activity...</div>
