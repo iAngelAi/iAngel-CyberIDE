@@ -192,9 +192,13 @@ async def lifespan(app: FastAPI):
     # Start UDP Listener for Neural SDK
     print("\nℹ Starting Neural SDK Receiver...")
     loop = asyncio.get_running_loop()
+
+    # Use environment variable for host, default to localhost for security
+    host = os.getenv("NEURAL_HOST", "127.0.0.1")
+
     transport, protocol = await loop.create_datagram_endpoint(
         lambda: NeuralUDPProtocol(handle_synapse_activation),
-        local_addr=('0.0.0.0', 8123)
+        local_addr=(host, 8123)
     )
     
     print("\n" + "=" * 60)
@@ -698,9 +702,10 @@ def main():
     """)
 
     # Run server
+    host = os.getenv("NEURAL_HOST", "127.0.0.1")
     uvicorn.run(
         "neural_cli.main:app",
-        host="0.0.0.0",
+        host=host,
         port=8000,
         reload=False,  # Disable reload (we have our own file watcher)
         log_level="info"
