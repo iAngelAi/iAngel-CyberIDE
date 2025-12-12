@@ -1,15 +1,57 @@
 # CyberIDE - Quick Start Guide
 
-## Get Started in 30 Seconds
+## Prerequisites
 
-### 1. The App is Already Running!
+- Node.js 18+
+- Python 3.8+
+- npm or pnpm
 
-Open your browser and go to:
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/iAngelAi/iAngel-CyberIDE.git
+cd iAngel-CyberIDE
+
+# Install dependencies
+npm install
+pip install -r requirements.txt
+```
+
+## Launch the Application
+
+### One-Command Launch (Recommended)
+
+```bash
+# Start everything (auto-installs dependencies)
+python3 neural_core.py
+
+# Or using npm:
+npm start
+```
+
+This starts both the frontend (port 5173) and backend (port 8000) automatically.
+
+### Separate Launch
+
+If you prefer to run frontend and backend separately:
+
+```bash
+# Terminal 1 - Frontend
+npm run dev
+
+# Terminal 2 - Backend
+python3 neural_core.py --backend
+```
+
+## Access the Application
+
+Open your browser and navigate to:
 ```
 http://localhost:5173/
 ```
 
-### 2. Try the Demo
+## Try the Demo
 
 Click the **"INITIALIZE NEURAL CORE"** button in the top-right corner.
 
@@ -19,14 +61,12 @@ Watch as:
 - Status panel updates in real-time
 - Illumination meter reaches 100%
 
-### 3. Interact with the Brain
+## Interact with the Brain
 
 - **Drag** with mouse to rotate the brain 360°
 - **Scroll** to zoom in/out
 - **Watch** the nodes pulse and glow
 - **Observe** neural pathways connecting regions
-
----
 
 ## What You're Seeing
 
@@ -62,8 +102,6 @@ Overall system health visualization:
 - **50%** = Half complete
 - **100%** = All systems optimal
 
----
-
 ## File Structure at a Glance
 
 ```
@@ -78,13 +116,11 @@ src/
 └── App.tsx               # Main application
 ```
 
----
-
 ## Customization Tips
 
 ### Change Brain Colors
 
-Edit `/Users/felixlefebvre/CyberIDE/tailwind.config.js`:
+Edit `tailwind.config.js`:
 
 ```javascript
 colors: {
@@ -96,7 +132,7 @@ colors: {
 
 ### Add More Regions
 
-Edit `/Users/felixlefebvre/CyberIDE/src/App.tsx`:
+Edit `src/App.tsx`:
 
 ```typescript
 const initialRegions: NeuralRegion[] = [
@@ -115,20 +151,18 @@ const initialRegions: NeuralRegion[] = [
 
 ### Modify Animation Speed
 
-Edit `/Users/felixlefebvre/CyberIDE/src/components/Brain3D/NeuralBrain.tsx`:
+Edit `src/components/Brain3D/NeuralBrain.tsx`:
 
 ```typescript
 groupRef.current.rotation.y += delta * 0.1;  // Change 0.1 to adjust speed
 ```
-
----
 
 ## Troubleshooting
 
 ### Server Not Running?
 
 ```bash
-cd /Users/felixlefebvre/CyberIDE
+cd iAngel-CyberIDE
 npm run dev
 ```
 
@@ -150,14 +184,12 @@ npx tsc --noEmit
 
 Should show no errors. If it does, check the file paths.
 
----
-
 ## Next Steps
 
 ### Learn More
-- Read `SETUP.md` for detailed documentation
-- Read `IMPLEMENTATION_SUMMARY.md` for technical details
-- Read `CLAUDE.md` for the Neural Architect philosophy
+- Read the [full documentation](docs/README.md)
+- Explore the [architecture decisions](docs/adr/)
+- Review the [security policy](SECURITY.md)
 
 ### Extend the App
 1. Connect to real test results (Phase 1)
@@ -171,8 +203,6 @@ Should show no errors. If it does, check the file paths.
 - **Types**: `src/types/index.ts`
 - **Utilities**: `src/utils/brainHelpers.ts`
 
----
-
 ## Key Commands
 
 ```bash
@@ -181,18 +211,13 @@ npm run build    # Build for production
 npm run preview  # Preview production build
 ```
 
----
-
 ## Support
 
-Questions? Check these files:
-- **Setup Issues**: `SETUP.md`
-- **Technical Details**: `IMPLEMENTATION_SUMMARY.md`
-- **Philosophy**: `CLAUDE.md`
-- **Roadmap**: `ROADMAP.md`
+For more help:
+- Check the [documentation index](docs/README.md)
+- Review [troubleshooting guides](docs/README.md)
+- Open an issue on GitHub
 
 ---
-
-**Status:** ⚡ System Optimal. Neural Core Active.
 
 Enjoy exploring CyberIDE!
