@@ -43,11 +43,11 @@ Tu dois impérativement respecter les protocoles suivants lors de la génératio
 * Ne JAMAIS utiliser les permissions par défaut du GITHUB_TOKEN.
 * Définir explicitement les permissions: au niveau du Workflow ou du Job.
 * Exemple obligatoire :
-  ```yaml
+```yaml
   permissions:
     contents: read
     pull-requests: write
-  ```
+  ````
 
 ### PERF-01-CACHE-OPTIMIZATION (HAUTE)
 * Interdiction de télécharger les mêmes dépendances (node_modules, pip, maven) à chaque run.
