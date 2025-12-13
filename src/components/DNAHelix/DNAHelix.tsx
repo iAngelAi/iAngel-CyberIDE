@@ -11,9 +11,7 @@ import * as THREE from 'three';
 import { Line, Sphere } from '@react-three/drei';
 import type { DNAHelixProps, SourceFileNode, TestFileNode } from '../../types/dna';
 import { DNA_COLORS } from '../../types/dna';
-
-// Simplified particle system - removed to fix TypeScript issues
-// Will be re-implemented with proper Three.js types later
+import { ParticleStrand } from './ParticleStrand';
 
 export const DNAHelix: React.FC<DNAHelixProps & {
   resonatingFiles?: string[];
@@ -27,7 +25,6 @@ export const DNAHelix: React.FC<DNAHelixProps & {
   resonatingFiles = []
 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const pulseTimeRef = useRef(0);
 
   // Calculer l'intensité de résonance pour chaque node
   const getResonanceIntensity = (nodeId: string) => {
@@ -82,9 +79,6 @@ export const DNAHelix: React.FC<DNAHelixProps & {
 
     // Rotation autour de l'axe Y
     groupRef.current.rotation.y += rotationSpeed * delta;
-
-    // Mise à jour du temps pour les pulsations
-    pulseTimeRef.current += delta;
   });
 
   // Fonction pour obtenir la couleur d'un node source
@@ -262,37 +256,23 @@ export const DNAHelix: React.FC<DNAHelixProps & {
         );
       })}
 
-      {/* Effet de particules amélioré */}
+      {/* Effet de particules amélioré - Optimized with ParticleStrand */}
       {pulseIntensity > 0.5 && (
         <group>
-          {sourcePositions.map((pos, i) => (
-            <mesh key={`particle-${i}`} position={pos}>
-              <sphereGeometry args={[0.06, 8, 8]} />
-              <meshStandardMaterial
-                color={DNA_COLORS.SOURCE_STRAND}
-                emissive={DNA_COLORS.SOURCE_STRAND}
-                emissiveIntensity={Math.sin(pulseTimeRef.current * 2 + i) * 0.8 + 0.7}
-                transparent
-                opacity={0.6}
-                metalness={0.9}
-                roughness={0.1}
-              />
-            </mesh>
-          ))}
-          {testPositions.map((pos, i) => (
-            <mesh key={`particle-test-${i}`} position={pos}>
-              <sphereGeometry args={[0.06, 8, 8]} />
-              <meshStandardMaterial
-                color={DNA_COLORS.TEST_STRAND}
-                emissive={DNA_COLORS.TEST_STRAND}
-                emissiveIntensity={Math.sin(pulseTimeRef.current * 2.5 + i) * 0.8 + 0.7}
-                transparent
-                opacity={0.6}
-                metalness={0.9}
-                roughness={0.1}
-              />
-            </mesh>
-          ))}
+          <ParticleStrand
+            positions={sourcePositions}
+            color={DNA_COLORS.SOURCE_STRAND}
+            pulseIntensity={pulseIntensity}
+            pulseSpeed={2}
+            pulseOffset={0}
+          />
+          <ParticleStrand
+            positions={testPositions}
+            color={DNA_COLORS.TEST_STRAND}
+            pulseIntensity={pulseIntensity}
+            pulseSpeed={2.5}
+            pulseOffset={0}
+          />
         </group>
       )}
     </group>
