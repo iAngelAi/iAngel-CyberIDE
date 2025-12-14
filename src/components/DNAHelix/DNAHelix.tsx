@@ -11,9 +11,7 @@ import * as THREE from 'three';
 import { Line, Sphere } from '@react-three/drei';
 import type { DNAHelixProps, SourceFileNode, TestFileNode } from '../../types/dna';
 import { DNA_COLORS } from '../../types/dna';
-
-// Simplified particle system - removed to fix TypeScript issues
-// Will be re-implemented with proper Three.js types later
+import { DNAParticles } from './DNAParticles';
 
 export const DNAHelix: React.FC<DNAHelixProps & {
   resonatingFiles?: string[];
@@ -263,38 +261,11 @@ export const DNAHelix: React.FC<DNAHelixProps & {
       })}
 
       {/* Effet de particules amélioré */}
-      {pulseIntensity > 0.5 && (
-        <group>
-          {sourcePositions.map((pos, i) => (
-            <mesh key={`particle-${i}`} position={pos}>
-              <sphereGeometry args={[0.06, 8, 8]} />
-              <meshStandardMaterial
-                color={DNA_COLORS.SOURCE_STRAND}
-                emissive={DNA_COLORS.SOURCE_STRAND}
-                emissiveIntensity={Math.sin(pulseTimeRef.current * 2 + i) * 0.8 + 0.7}
-                transparent
-                opacity={0.6}
-                metalness={0.9}
-                roughness={0.1}
-              />
-            </mesh>
-          ))}
-          {testPositions.map((pos, i) => (
-            <mesh key={`particle-test-${i}`} position={pos}>
-              <sphereGeometry args={[0.06, 8, 8]} />
-              <meshStandardMaterial
-                color={DNA_COLORS.TEST_STRAND}
-                emissive={DNA_COLORS.TEST_STRAND}
-                emissiveIntensity={Math.sin(pulseTimeRef.current * 2.5 + i) * 0.8 + 0.7}
-                transparent
-                opacity={0.6}
-                metalness={0.9}
-                roughness={0.1}
-              />
-            </mesh>
-          ))}
-        </group>
-      )}
+      <DNAParticles
+        sourcePositions={sourcePositions}
+        testPositions={testPositions}
+        pulseIntensity={pulseIntensity}
+      />
     </group>
   );
 };
