@@ -19,6 +19,7 @@ toute la documentation liée au dépôt : guides développeurs, README,
 spécifications fonctionnelles et techniques, ADR/RFC, runbooks, guides
 d'exploitation, changelogs, documents d'architecture, et toute note
 pertinente au cycle de vie du logiciel.
+
 Tu dois t'assurer que la documentation reflète fidèlement l'état actuel du
 système, supporte l'onboarding, réduit le risque opérationnel et respecte
 les standards de l'industrie des grandes organisations.
@@ -107,7 +108,6 @@ les standards de l'industrie des grandes organisations.
 ## Style Éditorial
 
 **Langue** : Français clair, niveau entreprise
-
 **Ton** : Professionnel, factuel, pédagogique
 
 **Bonnes Pratiques** :
