@@ -33,6 +33,7 @@ from .test_analyzer import PytestAnalyzer
 from .metric_calculator import MetricCalculator
 from .file_mapper import FileMapper, FileMappingResult
 from .git_pulse import GitPulseEngine
+from .test_history import TestHistoryManager
 
 
 # ============================================================================
@@ -66,6 +67,7 @@ class NeuralCore:
         self.metric_calculator: MetricCalculator | None = None
         self.file_mapper: FileMapper | None = None
         self.git_pulse: GitPulseEngine | None = None
+        self.test_history_manager: TestHistoryManager | None = None
         self.current_file_mapping: FileMappingResult | None = None
         self.current_status: NeuralStatus | None = None
         self.connected_clients: Set[WebSocket] = set()
@@ -143,6 +145,7 @@ async def lifespan(app: FastAPI):
     neural_core.test_analyzer = PytestAnalyzer(str(neural_core.project_root))
     neural_core.metric_calculator = MetricCalculator(str(neural_core.project_root))
     neural_core.file_mapper = FileMapper(str(neural_core.project_root))
+    neural_core.test_history_manager = TestHistoryManager(str(neural_core.project_root))
 
     # Load or create initial status
     neural_core.current_status = neural_core.load_status()
@@ -393,12 +396,18 @@ async def run_tests():
 
 @app.get("/tests/results")
 async def get_test_results():
-    """Get latest test results."""
-    # This will be enhanced to return detailed test history
+    """Get detailed test history and current results."""
+    history = []
+    if neural_core.test_history_manager:
+        history = neural_core.test_history_manager.get_history()
+
     if neural_core.current_status:
         return {
-            "regions": neural_core.current_status.regions,
-            "diagnostics": neural_core.current_status.diagnostics
+            "current": {
+                "regions": neural_core.current_status.regions,
+                "diagnostics": neural_core.current_status.diagnostics
+            },
+            "history": history
         }
     return {"message": "No test results available"}
 
@@ -650,6 +659,10 @@ async def run_tests_and_update():
 
         # Print summary
         print(neural_core.test_analyzer.format_test_summary(test_result))
+
+        # Save to history
+        if neural_core.test_history_manager:
+            neural_core.test_history_manager.add_result(test_result)
 
         # Update metrics
         await update_neural_status(test_result)
