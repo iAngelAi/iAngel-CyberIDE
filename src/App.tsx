@@ -180,11 +180,6 @@ function App() {
     },
   });
 
-  // Helper to refresh status manually if needed
-  const requestStatusRefresh = useCallback(() => {
-    sendMessage({ command: 'refresh_status' });
-  }, [sendMessage]);
-
   // Simulate neural initialization (for demo when backend is offline)
   const [showGitDashboard, setShowGitDashboard] = useState(false);
 
