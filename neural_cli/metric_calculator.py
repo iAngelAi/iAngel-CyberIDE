@@ -405,18 +405,32 @@ class MetricCalculator:
         return False
 
     def _count_mcp_providers(self) -> int:
-        """Count configured MCP providers (placeholder for now)."""
-        # This will be implemented when MCP integration is added
-        # For now, check for a hypothetical mcp_config.json
-        mcp_config = self.project_root / "mcp_config.json"
-        if mcp_config.exists():
+        """Count configured MCP providers from configuration files."""
+        providers = set()
+
+        # Check .gemini/settings.json
+        gemini_settings = self.project_root / ".gemini" / "settings.json"
+        if gemini_settings.exists():
             try:
-                with open(mcp_config, 'r') as f:
+                with open(gemini_settings, 'r') as f:
                     data = json.load(f)
-                    return len(data.get("providers", []))
-            except:
+                    if "mcpServers" in data and isinstance(data["mcpServers"], dict):
+                        providers.update(data["mcpServers"].keys())
+            except Exception:
                 pass
-        return 0
+
+        # Check .github/mcp-configuration.json
+        github_mcp_config = self.project_root / ".github" / "mcp-configuration.json"
+        if github_mcp_config.exists():
+            try:
+                with open(github_mcp_config, 'r') as f:
+                    data = json.load(f)
+                    if "mcpServers" in data and isinstance(data["mcpServers"], dict):
+                        providers.update(data["mcpServers"].keys())
+            except Exception:
+                pass
+
+        return len(providers)
 
     def _check_production_ready(self) -> bool:
         """Check if project is production ready (all critical tests passing)."""
