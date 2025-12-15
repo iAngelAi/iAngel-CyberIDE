@@ -239,8 +239,11 @@ class TestTestResultsEndpoint:
         assert response.status_code == 200
         data = response.json()
 
-        assert "regions" in data
-        assert "diagnostics" in data
+        assert "current" in data
+        assert "history" in data
+        assert "regions" in data["current"]
+        assert "diagnostics" in data["current"]
+        assert isinstance(data["history"], list)
 
     def test_get_test_results_when_no_status(self, client):
         """GET /tests/results should handle missing status."""
