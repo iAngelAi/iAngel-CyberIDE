@@ -508,13 +508,15 @@ class TestIntegrationScore:
 
     def test_integration_score_with_mcp_providers(self, tmp_path):
         """Test integration score with MCP providers."""
-        mcp_config = {
-            "providers": [
-                {"name": "provider1"},
-                {"name": "provider2"}
-            ]
+        # Create .gemini/settings.json
+        (tmp_path / ".gemini").mkdir()
+        gemini_settings = {
+            "mcpServers": {
+                "provider1": {},
+                "provider2": {}
+            }
         }
-        (tmp_path / "mcp_config.json").write_text(json.dumps(mcp_config))
+        (tmp_path / ".gemini" / "settings.json").write_text(json.dumps(gemini_settings))
 
         calculator = MetricCalculator(str(tmp_path))
         score = calculator._calculate_integration_score()
@@ -522,14 +524,44 @@ class TestIntegrationScore:
         # 2 providers = 30 points (2 * 15)
         assert score == 30.0
 
+    def test_integration_score_with_multiple_config_files(self, tmp_path):
+        """Test integration score with MCP providers from multiple files."""
+        # Create .gemini/settings.json
+        (tmp_path / ".gemini").mkdir()
+        gemini_settings = {
+            "mcpServers": {
+                "provider1": {},
+                "provider2": {}
+            }
+        }
+        (tmp_path / ".gemini" / "settings.json").write_text(json.dumps(gemini_settings))
+
+        # Create .github/mcp-configuration.json
+        (tmp_path / ".github").mkdir()
+        github_config = {
+            "mcpServers": {
+                "provider2": {}, # Duplicate
+                "provider3": {}
+            }
+        }
+        (tmp_path / ".github" / "mcp-configuration.json").write_text(json.dumps(github_config))
+
+        calculator = MetricCalculator(str(tmp_path))
+        score = calculator._calculate_integration_score()
+
+        # 3 unique providers (provider1, provider2, provider3) = 45 points (3 * 15)
+        assert score == 45.0
+
     def test_integration_score_maximum(self, tmp_path):
         """Test integration score is capped at 100."""
         (tmp_path / ".env").write_text("API_KEY=test123")
 
-        mcp_config = {
-            "providers": [{"name": f"provider{i}"} for i in range(10)]
+        # Create .gemini/settings.json with many providers
+        (tmp_path / ".gemini").mkdir()
+        gemini_settings = {
+            "mcpServers": {f"provider{i}": {} for i in range(10)}
         }
-        (tmp_path / "mcp_config.json").write_text(json.dumps(mcp_config))
+        (tmp_path / ".gemini" / "settings.json").write_text(json.dumps(gemini_settings))
 
         calculator = MetricCalculator(str(tmp_path))
         score = calculator._calculate_integration_score()
