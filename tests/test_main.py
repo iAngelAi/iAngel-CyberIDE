@@ -273,6 +273,10 @@ class TestMetricsEndpoint:
     def test_get_metrics(self, client, neural_status):
         """GET /metrics should return project metrics."""
         neural_core.current_status = neural_status
+        # Ensure metric_calculator is mock-initialized if it's None
+        if neural_core.metric_calculator is None:
+             from neural_cli.metric_calculator import MetricCalculator
+             neural_core.metric_calculator = MetricCalculator(str(neural_core.project_root))
 
         response = client.get("/metrics")
 
