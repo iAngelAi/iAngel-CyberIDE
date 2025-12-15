@@ -33,8 +33,16 @@ export const DNAHelix: React.FC<DNAHelixProps & {
   const getResonanceIntensity = (nodeId: string) => {
     if (!resonatingFiles.includes(nodeId)) return 0;
 
-    // Simple resonance effect - will be enhanced later
-    return 1.0;
+    // Generate a unique phase based on nodeId to avoid synchronized pulsing
+    const phase = nodeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const time = pulseTimeRef.current;
+
+    // Create a smooth wave between 0.5 and 1.0 using sine
+    // Frequency increased to 4 for more visible pulsing
+    const pulse = Math.sin(time * 4 + phase * 0.1);
+
+    // Map [-1, 1] to [0.5, 1.0] for intensity
+    return 0.75 + pulse * 0.25;
   };
 
   // Calculer les positions des nodes sur l'hélice
