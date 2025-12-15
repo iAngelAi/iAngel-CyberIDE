@@ -18,6 +18,15 @@ const ParticleMaterial = new THREE.MeshStandardMaterial({
   roughness: 0.1,
 });
 
+// Définition manuelle stricte pour le Shader Three.js
+interface ThreeShader {
+  uniforms: {
+    [key: string]: { value: unknown };
+  };
+  vertexShader: string;
+  fragmentShader: string;
+}
+
 export const DNAHelixParticles: React.FC<DNAHelixParticlesProps> = ({
   positions,
   color,
@@ -26,7 +35,7 @@ export const DNAHelixParticles: React.FC<DNAHelixParticlesProps> = ({
   opacity = 0.6
 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const shaderRef = useRef<THREE.Shader | null>(null);
+  const shaderRef = useRef<ThreeShader | null>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   // Clone material to avoid sharing uniforms between different helix strands
