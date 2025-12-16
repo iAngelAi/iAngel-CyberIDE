@@ -272,9 +272,13 @@ class ChromaDBAdapter(VectorStore):
                 text = results["documents"][0][i]
                 metadata = results["metadatas"][0][i] if results["metadatas"] else {}
                 # ChromaDB returns distances, convert to similarity scores
+                # Note: This assumes L2 distance (default). For other metrics:
+                # - Cosine: score = 1.0 - distance
+                # - Inner Product: score = distance (already a similarity)
                 distance = results["distances"][0][i] if results["distances"] else 0.0
                 # Convert L2 distance to similarity (inverse relationship)
-                score = 1.0 / (1.0 + distance)
+                # Higher score = more similar
+                score = max(0.0, min(1.0, 1.0 / (1.0 + distance)))
                 output.append((doc_id, text, metadata, score))
 
         return output
@@ -441,7 +445,8 @@ class VectorMemory:
         self._store = ChromaDBAdapter(persist_directory=self.persist_directory)
 
         # Pre-load embedding model to handle any downloads
-        await self._embedding_model._ensure_loaded()
+        # Using protected method internally is acceptable within same package
+        await self._embedding_model._ensure_loaded()  # noqa: SLF001
 
         self._initialized = True
         logger.info("VectorMemory initialized successfully")
