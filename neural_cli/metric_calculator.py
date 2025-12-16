@@ -385,14 +385,22 @@ class MetricCalculator:
         return (self.project_root / filename).exists()
 
     def _check_api_configured(self) -> bool:
-        """Check if API is configured (placeholder for now)."""
-        # Check for .env file or config with API keys
+        """Check if API is configured."""
+        # 1. Check environment variables
+        if os.environ.get("GOOGLE_CLOUD_API_KEY") or os.environ.get("VITE_API_URL"):
+            return True
+
+        # 2. Check .env file content
         env_file = self.project_root / ".env"
         if env_file.exists():
-            # Very basic check - just see if it has content
-            return env_file.stat().st_size > 10
+            try:
+                content = env_file.read_text()
+                if "GOOGLE_CLOUD_API_KEY" in content or "VITE_API_URL" in content:
+                    return True
+            except Exception:
+                pass
 
-        # Check for neural_status.json with api_configured flag
+        # 3. Check for neural_status.json with api_configured flag
         status_file = self.project_root / "neural_status.json"
         if status_file.exists():
             try:

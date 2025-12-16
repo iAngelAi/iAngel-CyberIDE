@@ -14,6 +14,7 @@ This module validates:
 
 import pytest
 import json
+import os
 from pathlib import Path
 from datetime import datetime
 
@@ -31,7 +32,20 @@ from neural_cli.models import (
 # ============================================================================
 
 @pytest.fixture
-def empty_project(tmp_path):
+def clean_env():
+    """Clear relevant environment variables for testing."""
+    original_env = os.environ.copy()
+    keys_to_remove = ["GOOGLE_CLOUD_API_KEY", "VITE_API_URL"]
+    for key in keys_to_remove:
+        if key in os.environ:
+            del os.environ[key]
+    yield
+    # Restore environment
+    os.environ.clear()
+    os.environ.update(original_env)
+
+@pytest.fixture
+def empty_project(tmp_path, clean_env):
     """Create an empty project directory."""
     return tmp_path
 
@@ -486,9 +500,9 @@ class TestIntegrationScore:
 
         assert score == 0.0
 
-    def test_integration_score_with_env_file(self, tmp_path):
+    def test_integration_score_with_env_file(self, tmp_path, clean_env):
         """Test integration score with .env file."""
-        (tmp_path / ".env").write_text("API_KEY=test123")
+        (tmp_path / ".env").write_text("GOOGLE_CLOUD_API_KEY=test123")
 
         calculator = MetricCalculator(str(tmp_path))
         score = calculator._calculate_integration_score()
@@ -496,7 +510,7 @@ class TestIntegrationScore:
         # .env file = 50 points
         assert score == 50.0
 
-    def test_integration_score_empty_env_file(self, tmp_path):
+    def test_integration_score_empty_env_file(self, tmp_path, clean_env):
         """Test integration score with empty .env file."""
         (tmp_path / ".env").write_text("")  # Too small
 
@@ -506,7 +520,17 @@ class TestIntegrationScore:
         # Empty .env doesn't count
         assert score == 0.0
 
-    def test_integration_score_with_mcp_providers(self, tmp_path):
+    def test_integration_score_with_env_vars(self, tmp_path, clean_env):
+        """Test integration score with environment variables."""
+        os.environ["GOOGLE_CLOUD_API_KEY"] = "some_key"
+
+        calculator = MetricCalculator(str(tmp_path))
+        score = calculator._calculate_integration_score()
+
+        # Environment variables = 50 points
+        assert score == 50.0
+
+    def test_integration_score_with_mcp_providers(self, tmp_path, clean_env):
         """Test integration score with MCP providers."""
         # Create .gemini/settings.json
         (tmp_path / ".gemini").mkdir()
@@ -524,7 +548,7 @@ class TestIntegrationScore:
         # 2 providers = 30 points (2 * 15)
         assert score == 30.0
 
-    def test_integration_score_with_multiple_config_files(self, tmp_path):
+    def test_integration_score_with_multiple_config_files(self, tmp_path, clean_env):
         """Test integration score with MCP providers from multiple files."""
         # Create .gemini/settings.json
         (tmp_path / ".gemini").mkdir()
@@ -552,9 +576,9 @@ class TestIntegrationScore:
         # 3 unique providers (provider1, provider2, provider3) = 45 points (3 * 15)
         assert score == 45.0
 
-    def test_integration_score_maximum(self, tmp_path):
+    def test_integration_score_maximum(self, tmp_path, clean_env):
         """Test integration score is capped at 100."""
-        (tmp_path / ".env").write_text("API_KEY=test123")
+        (tmp_path / ".env").write_text("GOOGLE_CLOUD_API_KEY=test123")
 
         # Create .gemini/settings.json with many providers
         (tmp_path / ".gemini").mkdir()
