@@ -191,15 +191,16 @@ class MetricCalculator:
             last_modified=datetime.now(timezone.utc)
         )
 
-        # Data Layer region (currently empty, reserved for future database/storage layer)
-        # Will be used when data persistence is added
+        # Data Layer region
+        # Maps to data files (models, schemas, json data)
+        data_files = file_counts.get("data", 0)
         regions["data-layer"] = BrainRegion(
-            status=RegionStatus.OFFLINE,
-            coverage=0.0,
-            test_count=0,
-            passing_tests=0,
-            failing_tests=0,
-            file_count=0,
+            status=RegionStatus.HEALTHY if data_files > 0 else RegionStatus.OFFLINE,
+            coverage=test_coverage if data_files > 0 else 0.0,
+            test_count=test_results.get("total", 0),
+            passing_tests=test_results.get("passed", 0),
+            failing_tests=test_results.get("failed", 0),
+            file_count=data_files,
             last_modified=datetime.now(timezone.utc)
         )
 
@@ -472,7 +473,8 @@ class MetricCalculator:
         counts = {
             "frontend": 0,
             "backend": 0,
-            "tests": 0
+            "tests": 0,
+            "data": 0
         }
 
         # Count frontend files (src/)
@@ -480,6 +482,7 @@ class MetricCalculator:
             counts["frontend"] = len([
                 f for f in self.src_dir.rglob("*")
                 if f.is_file() and f.suffix in [".ts", ".tsx", ".js", ".jsx"]
+                and "schemas" not in f.parts  # Exclude schemas from frontend
             ])
 
         # Count backend files (neural_cli/)
@@ -487,6 +490,7 @@ class MetricCalculator:
             counts["backend"] = len([
                 f for f in self.neural_cli_dir.rglob("*.py")
                 if f.is_file() and not f.name.startswith("__")
+                and f.name != "models.py"  # Exclude models.py from backend
             ])
 
         # Count test files
@@ -495,5 +499,23 @@ class MetricCalculator:
                 f for f in self.tests_dir.rglob("test_*.py")
                 if f.is_file()
             ])
+
+        # Count data files
+        # 1. Models in neural_cli/models.py
+        if (self.neural_cli_dir / "models.py").exists():
+            counts["data"] += 1
+
+        # 2. Schemas in src/schemas/
+        schemas_dir = self.src_dir / "schemas"
+        if schemas_dir.exists():
+            counts["data"] += len([
+                f for f in schemas_dir.rglob("*.ts")
+                if f.is_file()
+            ])
+
+        # 3. JSON data files in root (test_results, history, status)
+        for json_file in ["neural_status.json", "test_results.json", "test_history.json"]:
+            if (self.project_root / json_file).exists():
+                counts["data"] += 1
 
         return counts
