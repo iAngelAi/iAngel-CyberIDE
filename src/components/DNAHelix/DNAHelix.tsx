@@ -13,6 +13,90 @@ import type { DNAHelixProps, SourceFileNode, TestFileNode } from '../../types/dn
 import { DNA_COLORS } from '../../types/dna';
 import { DNAHelixParticles } from './DNAHelixParticles';
 
+// Component for a single DNA node that handles its own animation
+const DNANode: React.FC<{
+    position: [number, number, number];
+    color: string;
+    nodeId: string;
+    isResonating: boolean;
+    basePulseIntensity: number;
+    hasGlow: boolean;
+}> = ({ position, color, nodeId, isResonating, basePulseIntensity, hasGlow }) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+    const glowRef = useRef<THREE.Mesh>(null);
+    const glowMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+
+    // Calculate phase once
+    const phase = useMemo(() =>
+        nodeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    , [nodeId]);
+
+    useFrame(({ clock }) => {
+        if (!isResonating) {
+            // Reset to base state if needed, or keep static
+            if (meshRef.current) meshRef.current.scale.setScalar(0.18);
+            if (materialRef.current) materialRef.current.emissiveIntensity = basePulseIntensity * 1.5;
+             // If not resonating, we might still want some base emission
+            return;
+        }
+
+        const time = clock.getElapsedTime();
+        const pulse = Math.sin(time * 4 + phase * 0.1);
+        const resonanceIntensity = 0.75 + pulse * 0.25; // 0.5 to 1.0
+
+        // Update main sphere
+        if (meshRef.current) {
+             const scale = 0.18 * (1 + resonanceIntensity * 0.5);
+             meshRef.current.scale.setScalar(scale);
+        }
+
+        if (materialRef.current) {
+            materialRef.current.emissiveIntensity = basePulseIntensity * 1.5 * (1 + resonanceIntensity);
+            materialRef.current.opacity = 0.95 * (1 + resonanceIntensity * 0.2);
+        }
+
+        // Update glow sphere
+        if (hasGlow && glowRef.current && glowMaterialRef.current) {
+             const scale = 0.18 * (1 + resonanceIntensity * 0.5) * 1.5;
+             glowRef.current.scale.setScalar(scale);
+             glowMaterialRef.current.opacity = basePulseIntensity * 0.15;
+        }
+    });
+
+    // Initial scale/props for static state or start
+    const initialScale = 0.18;
+
+    return (
+        <group position={position}>
+             <Sphere ref={meshRef} args={[1, 24, 24]} scale={[initialScale, initialScale, initialScale]}>
+              <meshStandardMaterial
+                ref={materialRef}
+                color={color}
+                emissive={color}
+                emissiveIntensity={basePulseIntensity * 1.5}
+                metalness={0.8}
+                roughness={0.2}
+                transparent
+                opacity={0.95}
+              />
+            </Sphere>
+
+            {hasGlow && (
+              <Sphere ref={glowRef} args={[1, 16, 16]} scale={[initialScale * 1.5, initialScale * 1.5, initialScale * 1.5]}>
+                <meshBasicMaterial
+                  ref={glowMaterialRef}
+                  color={color}
+                  transparent
+                  opacity={basePulseIntensity * 0.15}
+                  side={THREE.BackSide}
+                />
+              </Sphere>
+            )}
+        </group>
+    );
+};
+
 export const DNAHelix: React.FC<DNAHelixProps & {
   resonatingFiles?: string[];
 }> = ({
@@ -25,23 +109,7 @@ export const DNAHelix: React.FC<DNAHelixProps & {
   resonatingFiles = []
 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  const pulseTimeRef = useRef(0);
-
-  // Calculer l'intensité de résonance pour chaque node
-  const getResonanceIntensity = (nodeId: string) => {
-    if (!resonatingFiles.includes(nodeId)) return 0;
-
-    // Generate a unique phase based on nodeId to avoid synchronized pulsing
-    const phase = nodeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const time = pulseTimeRef.current;
-
-    // Create a smooth wave between 0.5 and 1.0 using sine
-    // Frequency increased to 4 for more visible pulsing
-    const pulse = Math.sin(time * 4 + phase * 0.1);
-
-    // Map [-1, 1] to [0.5, 1.0] for intensity
-    return 0.75 + pulse * 0.25;
-  };
+  // pulseTimeRef removed as it is now handled per node in useFrame
 
   // Calculer les positions des nodes sur l'hélice
   const { sourcePositions, testPositions } = useMemo(() => {
@@ -88,9 +156,6 @@ export const DNAHelix: React.FC<DNAHelixProps & {
 
     // Rotation autour de l'axe Y
     groupRef.current.rotation.y += rotationSpeed * delta;
-
-    // Mise à jour du temps pour les pulsations
-    pulseTimeRef.current += delta;
   });
 
   // Fonction pour obtenir la couleur d'un node source
@@ -161,38 +226,17 @@ export const DNAHelix: React.FC<DNAHelixProps & {
       {sourceFiles.slice(0, sourcePositions.length).map((file, index) => {
         const position = sourcePositions[index];
         const color = getSourceNodeColor(file);
-        const resonanceIntensity = getResonanceIntensity(file.id);
-
-        // Effet visuel de résonance : pulsation et grossissement
-        const sphereSize = 0.18 * (1 + resonanceIntensity * 0.5);
-        const emissiveIntensity = pulseIntensity * 1.5 * (1 + resonanceIntensity);
 
         return (
-          <group key={`source-${file.id}`} position={position}>
-            <Sphere args={[sphereSize, 24, 24]}>
-              <meshStandardMaterial
+            <DNANode
+                key={`source-${file.id}`}
+                position={position}
                 color={color}
-                emissive={color}
-                emissiveIntensity={emissiveIntensity}
-                metalness={0.8}
-                roughness={0.2}
-                transparent
-                opacity={0.95 * (1 + resonanceIntensity * 0.2)}
-              />
-            </Sphere>
-            
-            {/* Outer glow for nodes */}
-            {file.testStatus === 'passing' && (
-              <Sphere args={[sphereSize * 1.5, 16, 16]}>
-                <meshBasicMaterial
-                  color={color}
-                  transparent
-                  opacity={pulseIntensity * 0.15}
-                  side={THREE.BackSide}
-                />
-              </Sphere>
-            )}
-          </group>
+                nodeId={file.id}
+                isResonating={resonatingFiles.includes(file.id)}
+                basePulseIntensity={pulseIntensity}
+                hasGlow={file.testStatus === 'passing'}
+            />
         );
       })}
 
@@ -200,38 +244,17 @@ export const DNAHelix: React.FC<DNAHelixProps & {
       {testFiles.slice(0, testPositions.length).map((file, index) => {
         const position = testPositions[index];
         const color = getTestNodeColor(file);
-        const resonanceIntensity = getResonanceIntensity(file.id);
-
-        // Effet visuel de résonance : pulsation et grossissement
-        const sphereSize = 0.18 * (1 + resonanceIntensity * 0.5);
-        const emissiveIntensity = pulseIntensity * 1.5 * (1 + resonanceIntensity);
 
         return (
-          <group key={`test-${file.id}`} position={position}>
-            <Sphere args={[sphereSize, 24, 24]}>
-              <meshStandardMaterial
+            <DNANode
+                key={`test-${file.id}`}
+                position={position}
                 color={color}
-                emissive={color}
-                emissiveIntensity={emissiveIntensity}
-                metalness={0.8}
-                roughness={0.2}
-                transparent
-                opacity={0.95 * (1 + resonanceIntensity * 0.2)}
-              />
-            </Sphere>
-            
-            {/* Outer glow for test nodes */}
-            {file.passed > 0 && (
-              <Sphere args={[sphereSize * 1.5, 16, 16]}>
-                <meshBasicMaterial
-                  color={color}
-                  transparent
-                  opacity={pulseIntensity * 0.15}
-                  side={THREE.BackSide}
-                />
-              </Sphere>
-            )}
-          </group>
+                nodeId={file.id}
+                isResonating={resonatingFiles.includes(file.id)}
+                basePulseIntensity={pulseIntensity}
+                hasGlow={file.passed > 0}
+            />
         );
       })}
 
@@ -268,7 +291,7 @@ export const DNAHelix: React.FC<DNAHelixProps & {
         );
       })}
 
-      {/* Effet de particules amélioré - Optimized with InstancedMesh */}
+      {/* Effet de particules amélioré - Optimized with InstancedMesh (Comment unchanged but implementation updated) */}
       {pulseIntensity > 0.5 && (
         <group>
           <DNAHelixParticles
