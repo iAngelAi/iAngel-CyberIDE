@@ -16,9 +16,11 @@ import {
   Flame,
   Clock,
   Code,
-  Zap
+  Zap,
+  Activity
 } from 'lucide-react';
 import { GitPulseTimeline } from './GitPulseTimeline';
+import { MetricsMonitor } from '../MetricsMonitor';
 
 interface GitDashboardProps {
   fetchDashboardData: () => Promise<GitDashboardData>;
@@ -26,7 +28,7 @@ interface GitDashboardProps {
 
 export const GitDashboard: React.FC<GitDashboardProps> = ({ fetchDashboardData }) => {
   const [dashboardData, setDashboardData] = useState<GitDashboardData | null>(null);
-  const [activeTab, setActiveTab] = useState<'branches' | 'heatmap' | 'commits' | 'pulses'>('branches');
+  const [activeTab, setActiveTab] = useState<'branches' | 'heatmap' | 'commits' | 'pulses' | 'metrics'>('branches');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -212,10 +214,10 @@ export const GitDashboard: React.FC<GitDashboardProps> = ({ fetchDashboardData }
     <div className="p-4 bg-cyber-dark/80 backdrop-blur-sm rounded-lg space-y-4">
       {/* Tabs */}
       <div className="flex space-x-4 mb-4 border-b border-cyber-dark/50 pb-2">
-        {['branches', 'heatmap', 'commits', 'pulses'].map(tab => (
+        {['branches', 'heatmap', 'commits', 'pulses', 'metrics'].map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab as 'branches' | 'heatmap' | 'commits' | 'pulses')}
+            onClick={() => setActiveTab(tab as 'branches' | 'heatmap' | 'commits' | 'pulses' | 'metrics')}
             className={`
               px-4 py-2 rounded-lg transition-all duration-300 flex items-center
               ${activeTab === tab
@@ -224,6 +226,7 @@ export const GitDashboard: React.FC<GitDashboardProps> = ({ fetchDashboardData }
             `}
           >
             {tab === 'pulses' && <Zap size={14} className="mr-2" />}
+            {tab === 'metrics' && <Activity size={14} className="mr-2" />}
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </button>
         ))}
@@ -239,6 +242,9 @@ export const GitDashboard: React.FC<GitDashboardProps> = ({ fetchDashboardData }
         {activeTab === 'commits' && renderCommitsTab()}
         {activeTab === 'pulses' && dashboardData && (
           <GitPulseTimeline pulses={dashboardData.pulses} />
+        )}
+        {activeTab === 'metrics' && (
+          <MetricsMonitor pollIntervalMs={5000} />
         )}
       </div>
     </div>

@@ -479,6 +479,103 @@ async def refresh_file_mapping():
     return {"message": "File mapping refreshed", "stats": stats}
 
 
+@app.get("/api/metrics/summary")
+async def get_metrics_summary():
+    """
+    Get aggregated metrics summary for real-time monitoring.
+    
+    Returns:
+        - transactions_per_second: Average TPS over last minute
+        - average_latency_ms: Average operation latency
+        - error_rate: Percentage of failed operations (0-100)
+        - health_status: 'healthy' | 'degraded' | 'critical'
+    """
+    metrics_dir = Path("./metrics")
+    
+    # Initialize default values
+    summary = {
+        "transactions_per_second": 0.0,
+        "average_latency_ms": 0.0,
+        "error_rate": 0.0,
+        "health_status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "total_operations": 0
+    }
+    
+    # Check if metrics directory exists
+    if not metrics_dir.exists():
+        return summary
+    
+    try:
+        # Get all metric files, sorted by modification time (newest first)
+        metric_files = sorted(
+            metrics_dir.glob("metrics_*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+        
+        if not metric_files:
+            return summary
+        
+        # Read the last 5 files for recent metrics (approximately last minute with 5s flush)
+        total_operations = 0
+        total_latency = 0.0
+        failed_operations = 0
+        oldest_timestamp = None
+        newest_timestamp = None
+        
+        for metrics_file in metric_files[:5]:
+            try:
+                with open(metrics_file, 'r') as f:
+                    batch_data = json.load(f)
+                    records = batch_data.get('records', [])
+                    
+                    for record in records:
+                        total_operations += 1
+                        total_latency += record.get('duration_ms', 0)
+                        
+                        if not record.get('success', True):
+                            failed_operations += 1
+                        
+                        # Track time range
+                        timestamp_str = record.get('timestamp')
+                        if timestamp_str:
+                            ts = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                            if oldest_timestamp is None or ts < oldest_timestamp:
+                                oldest_timestamp = ts
+                            if newest_timestamp is None or ts > newest_timestamp:
+                                newest_timestamp = ts
+            except Exception as e:
+                print(f"⚠ Error reading metrics file {metrics_file}: {e}")
+                continue
+        
+        # Calculate metrics
+        if total_operations > 0:
+            summary["total_operations"] = total_operations
+            summary["average_latency_ms"] = round(total_latency / total_operations, 2)
+            summary["error_rate"] = round((failed_operations / total_operations) * 100, 2)
+            
+            # Calculate TPS if we have a time range
+            if oldest_timestamp and newest_timestamp:
+                time_range_seconds = (newest_timestamp - oldest_timestamp).total_seconds()
+                if time_range_seconds > 0:
+                    summary["transactions_per_second"] = round(total_operations / time_range_seconds, 2)
+            
+            # Determine health status based on error rate and latency
+            if summary["error_rate"] > 10 or summary["average_latency_ms"] > 1000:
+                summary["health_status"] = "critical"
+            elif summary["error_rate"] > 5 or summary["average_latency_ms"] > 500:
+                summary["health_status"] = "degraded"
+            else:
+                summary["health_status"] = "healthy"
+    
+    except Exception as e:
+        print(f"❌ Error calculating metrics summary: {e}")
+        # Return default values on error
+    
+    return summary
+
+
 @app.get("/git/dashboard")
 async def get_git_dashboard():
     """Get comprehensive Git dashboard data."""
