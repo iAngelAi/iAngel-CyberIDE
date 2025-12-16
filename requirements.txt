@@ -27,3 +27,7 @@ pylint>=3.0.0
 # AI Integration (Optionnel pour le futur MCP)
 openai>=1.3.0
 anthropic>=0.5.0
+
+# Vector Database & Embeddings (Pour la mémoire vectorielle RAG)
+chromadb>=0.4.0
+sentence-transformers>=2.2.0
