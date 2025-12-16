@@ -24,6 +24,7 @@ import pytest_asyncio
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, patch, MagicMock
+from pydantic import ValidationError
 
 from backend.cto.metrics import MetricsManager, MetricRecord, MetricsStats
 
@@ -220,7 +221,7 @@ async def test_record_operation_when_not_running_raises_error(metrics_storage):
 async def test_record_operation_validates_inputs(metrics_manager):
     """Test that invalid inputs are rejected by Pydantic validation."""
     # Negative duration
-    with pytest.raises(Exception):  # Pydantic ValidationError
+    with pytest.raises(ValidationError):
         await metrics_manager.record_operation(
             operation_type="test",
             operation_name="test_op",
@@ -228,7 +229,7 @@ async def test_record_operation_validates_inputs(metrics_manager):
         )
     
     # Empty operation_type
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         await metrics_manager.record_operation(
             operation_type="",
             operation_name="test_op",
