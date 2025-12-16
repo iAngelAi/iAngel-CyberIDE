@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from backend.cto.evaluation import (
     AgentEvaluator,
@@ -145,7 +146,7 @@ class TestConversationMessage:
     
     def test_invalid_role(self):
         """Test that invalid roles are rejected."""
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             ConversationMessage(
                 role="invalid_role",  # type: ignore
                 content="Test"
@@ -197,7 +198,7 @@ class TestEvaluationResult:
     
     def test_score_bounds(self):
         """Test that score must be between 0 and 100."""
-        with pytest.raises(Exception):  # Pydantic ValidationError
+        with pytest.raises(ValidationError):
             EvaluationResult(
                 agent_name="Test",
                 rule_adherence_score=150.0,  # Invalid: > 100
@@ -217,8 +218,8 @@ class TestEvaluationResult:
             conversation_length=5
         )
         assert result.agent_version == "1.0.0"
-        
-        with pytest.raises(Exception):  # Pydantic ValidationError
+
+        with pytest.raises(ValidationError):
             EvaluationResult(
                 agent_name="Test",
                 agent_version="invalid-version",
