@@ -1,0 +1,266 @@
+name: Documentation Guardian
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
+  workflow_dispatch:
+    inputs:
+      check_full_repo:
+        description: 'Check entire repository for documentation gaps'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  check-documentation:
+    name: Check Documentation Coverage
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for comprehensive checks
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Detect changed files in PR
+        if: github.event_name == 'pull_request'
+        id: changed-files
+        run: |
+          echo "Detecting changed files in PR..."
+          
+          # Get list of changed files
+          git fetch origin ${{ github.base_ref }}
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          # Extract Python and TypeScript files
+          PY_FILES=$(echo "$CHANGED_FILES" | grep -E '\.py$' || true)
+          TS_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx)$' || true)
+          MD_FILES=$(echo "$CHANGED_FILES" | grep -E '\.md$' || true)
+          
+          # Count changes
+          PY_COUNT=$(echo "$PY_FILES" | grep -c . || echo "0")
+          TS_COUNT=$(echo "$TS_FILES" | grep -c . || echo "0")
+          MD_COUNT=$(echo "$MD_FILES" | grep -c . || echo "0")
+          
+          echo "Python files changed: $PY_COUNT"
+          echo "TypeScript files changed: $TS_COUNT"
+          echo "Markdown files changed: $MD_COUNT"
+          
+          # Save to outputs
+          echo "py_count=$PY_COUNT" >> $GITHUB_OUTPUT
+          echo "ts_count=$TS_COUNT" >> $GITHUB_OUTPUT
+          echo "md_count=$MD_COUNT" >> $GITHUB_OUTPUT
+          echo "has_code_changes=$([[ $PY_COUNT -gt 0 || $TS_COUNT -gt 0 ]] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "has_doc_changes=$([[ $MD_COUNT -gt 0 ]] && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          
+          # Save file lists (escaped for multiline)
+          {
+            echo 'py_files<<EOF'
+            echo "$PY_FILES"
+            echo EOF
+          } >> $GITHUB_OUTPUT
+          
+          {
+            echo 'ts_files<<EOF'
+            echo "$TS_FILES"
+            echo EOF
+          } >> $GITHUB_OUTPUT
+      
+      - name: Analyze documentation coverage for PR
+        if: github.event_name == 'pull_request' && steps.changed-files.outputs.has_code_changes == 'true' && steps.changed-files.outputs.has_doc_changes == 'false'
+        id: analyze-pr
+        run: |
+          echo "⚠️  Code changes detected without documentation updates!"
+          echo ""
+          echo "Python files modified: ${{ steps.changed-files.outputs.py_count }}"
+          echo "TypeScript files modified: ${{ steps.changed-files.outputs.ts_count }}"
+          echo "Documentation files modified: ${{ steps.changed-files.outputs.md_count }}"
+          echo ""
+          
+          # Create detailed message
+          cat > /tmp/doc_warning.md << 'EOF'
+          ## ⚠️ Documentation Guardian Alert
+          
+          This Pull Request modifies code files but does not include any documentation updates.
+          
+          ### Changed Files Summary
+          - **Python files**: ${{ steps.changed-files.outputs.py_count }}
+          - **TypeScript files**: ${{ steps.changed-files.outputs.ts_count }}
+          - **Documentation files**: ${{ steps.changed-files.outputs.md_count }}
+          
+          ### Why This Matters
+          According to our [Documentation Standards (ADR-002)](../docs/adr/ADR-002-documentation-standards.md), code changes should be accompanied by documentation updates to prevent **Code Rot** - the divergence between code and documentation.
+          
+          ### Recommendations
+          
+          Please consider updating the following documentation:
+          
+          1. **README files** - Update relevant README.md files in modified directories
+          2. **API Documentation** - Update endpoint/function documentation if APIs changed
+          3. **Architecture Decisions** - Create/update ADR if architectural changes were made
+          4. **CHANGELOG.md** - Add entry describing the changes
+          5. **User Guides** - Update guides in `docs/guides/` if user-facing features changed
+          
+          ### Modified Code Files
+          
+          #### Python Files
+          ```
+          ${{ steps.changed-files.outputs.py_files }}
+          ```
+          
+          #### TypeScript Files
+          ```
+          ${{ steps.changed-files.outputs.ts_files }}
+          ```
+          
+          ### What To Do
+          
+          1. **If documentation update is needed**: Add relevant `.md` file updates to this PR
+          2. **If no documentation update is needed**: Add a comment explaining why (e.g., internal refactoring, test-only changes)
+          3. **For questions**: Consult the DocXpert agent in `.github/agents/DocXpert.agent.md`
+          
+          ### Bypassing This Check
+          
+          If this is a legitimate case where documentation updates are not required (e.g., fixing typos, updating tests only, internal refactoring with no API changes), please add a comment on this PR explaining the reasoning.
+          
+          ---
+          
+          *This check is automated by the Documentation Guardian workflow. See `.github/workflows/doc-guardian.yml`*
+          EOF
+          
+          cat /tmp/doc_warning.md
+          
+          # Set flag to post comment
+          echo "needs_warning=true" >> $GITHUB_OUTPUT
+      
+      - name: Post documentation warning comment
+        if: github.event_name == 'pull_request' && steps.analyze-pr.outputs.needs_warning == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const warningMessage = fs.readFileSync('/tmp/doc_warning.md', 'utf8');
+            
+            // Check if we already posted a comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.data.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Documentation Guardian Alert')
+            );
+            
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: warningMessage
+              });
+              console.log('Updated existing documentation warning comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: warningMessage
+              });
+              console.log('Posted new documentation warning comment');
+            }
+      
+      - name: Fail check if documentation is missing
+        if: github.event_name == 'pull_request' && steps.analyze-pr.outputs.needs_warning == 'true'
+        run: |
+          echo "::error title=Documentation Missing::Code changes detected without corresponding documentation updates. See PR comment for details."
+          exit 1
+      
+      - name: Check full repository documentation
+        if: github.event_name == 'workflow_dispatch' && inputs.check_full_repo == 'true'
+        run: |
+          echo "🔍 Running full repository documentation check..."
+          echo ""
+          
+          # Find all Python files
+          echo "Analyzing Python files..."
+          PY_FILES=$(find . -name "*.py" -not -path "./node_modules/*" -not -path "./.venv/*" -not -path "./venv/*" -not -path "./__pycache__/*")
+          
+          # Find all TypeScript files
+          echo "Analyzing TypeScript files..."
+          TS_FILES=$(find . \( -name "*.ts" -o -name "*.tsx" \) -not -path "./node_modules/*" -not -path "./dist/*")
+          
+          # Find all Markdown files
+          echo "Analyzing Markdown files..."
+          MD_FILES=$(find . -name "*.md" -not -path "./node_modules/*")
+          
+          PY_COUNT=$(echo "$PY_FILES" | grep -c . || echo "0")
+          TS_COUNT=$(echo "$TS_FILES" | grep -c . || echo "0")
+          MD_COUNT=$(echo "$MD_FILES" | grep -c . || echo "0")
+          
+          echo "📊 Repository Statistics:"
+          echo "  Python files: $PY_COUNT"
+          echo "  TypeScript files: $TS_COUNT"
+          echo "  Documentation files: $MD_COUNT"
+          echo ""
+          
+          # Check for directories without README
+          echo "📁 Checking for directories without README.md..."
+          DIRS_WITHOUT_README=""
+          
+          for dir in backend/cto/* src/components/*; do
+            if [ -d "$dir" ] && [ ! -f "$dir/README.md" ]; then
+              echo "  ⚠️  Missing README: $dir"
+              DIRS_WITHOUT_README="${DIRS_WITHOUT_README}${dir}\n"
+            fi
+          done
+          
+          if [ -z "$DIRS_WITHOUT_README" ]; then
+            echo "  ✅ All major directories have README files"
+          else
+            echo ""
+            echo "::warning title=Missing Documentation::Some directories lack README.md files"
+          fi
+          
+          echo ""
+          echo "✅ Full repository check complete"
+          echo ""
+          echo "To address documentation gaps, consider running the DocXpert agent:"
+          echo "  @DocXpert Please review and update documentation for the repository"
+      
+      - name: Success message
+        if: github.event_name == 'pull_request' && steps.changed-files.outputs.has_code_changes == 'true' && steps.changed-files.outputs.has_doc_changes == 'true'
+        run: |
+          echo "✅ Documentation Guardian: PASSED"
+          echo ""
+          echo "This PR includes both code and documentation changes."
+          echo "Thank you for maintaining documentation quality!"
+      
+      - name: No code changes detected
+        if: github.event_name == 'pull_request' && steps.changed-files.outputs.has_code_changes == 'false'
+        run: |
+          echo "ℹ️  Documentation Guardian: SKIPPED"
+          echo ""
+          echo "No Python or TypeScript files were modified in this PR."
+          echo "Documentation-only changes do not require this check."

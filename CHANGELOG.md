@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Troubleshooting guide at `docs/guides/troubleshooting.md`
 - Contributing guide at `docs/guides/contributing.md`
 - CHANGELOG.md following Keep a Changelog format
+- Documentation Guardian workflow (`.github/workflows/doc-guardian.yml`)
+- Automated documentation quality checks on PRs
+- Documentation Guardian guide at `docs/guides/documentation-guardian-workflow.md`
 
 ### Changed
 - Reorganized documentation into logical structure
