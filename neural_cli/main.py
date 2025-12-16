@@ -490,6 +490,9 @@ async def get_metrics_summary():
         - error_rate: Percentage of failed operations (0-100)
         - health_status: 'healthy' | 'degraded' | 'critical'
     """
+    # Configuration constants
+    MAX_METRICS_FILES = 5  # Number of recent metric files to aggregate
+    
     metrics_dir = Path("./metrics")
     
     # Initialize default values
@@ -517,14 +520,14 @@ async def get_metrics_summary():
         if not metric_files:
             return summary
         
-        # Read the last 5 files for recent metrics (approximately last minute with 5s flush)
+        # Read the last MAX_METRICS_FILES for recent metrics
         total_operations = 0
         total_latency = 0.0
         failed_operations = 0
         oldest_timestamp = None
         newest_timestamp = None
         
-        for metrics_file in metric_files[:5]:
+        for metrics_file in metric_files[:MAX_METRICS_FILES]:
             try:
                 with open(metrics_file, 'r') as f:
                     batch_data = json.load(f)
@@ -546,7 +549,10 @@ async def get_metrics_summary():
                             if newest_timestamp is None or ts > newest_timestamp:
                                 newest_timestamp = ts
             except Exception as e:
-                print(f"⚠ Error reading metrics file {metrics_file}: {e}")
+                # Log warning using proper logging (would use structlog in production)
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Error reading metrics file {metrics_file}: {e}")
                 continue
         
         # Calculate metrics
@@ -570,7 +576,10 @@ async def get_metrics_summary():
                 summary["health_status"] = "healthy"
     
     except Exception as e:
-        print(f"❌ Error calculating metrics summary: {e}")
+        # Log error using proper logging (would use structlog in production)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error calculating metrics summary: {e}")
         # Return default values on error
     
     return summary

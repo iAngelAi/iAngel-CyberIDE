@@ -34,8 +34,11 @@ const DEFAULT_POLL_INTERVAL = 5000;
 
 /**
  * API endpoint for metrics summary
+ * Uses environment variable or falls back to localhost for development
  */
-const METRICS_API_URL = 'http://localhost:8000/api/metrics/summary';
+const METRICS_API_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api/metrics/summary`
+  : 'http://localhost:8000/api/metrics/summary';
 
 export const MetricsMonitor: React.FC<MetricsMonitorProps> = ({ 
   pollIntervalMs = DEFAULT_POLL_INTERVAL 
@@ -57,7 +60,10 @@ export const MetricsMonitor: React.FC<MetricsMonitorProps> = ({
         setError(null);
         setIsLoading(false);
       } catch (err) {
-        console.error('Error fetching metrics:', err);
+        // Log error (in production, this would use a proper logging service)
+        if (import.meta.env.DEV) {
+          console.error('[MetricsMonitor] Error fetching metrics:', err);
+        }
         setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
         setIsLoading(false);
       }
