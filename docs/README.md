@@ -30,6 +30,7 @@ This directory contains comprehensive documentation for the CyberIDE project - a
 - [Development Workflow](guides/development.md) - Day-to-day development practices
 - [Testing Guide](guides/testing.md) - Writing and running tests
 - [Contributing Guidelines](guides/contributing.md) - How to contribute to the project
+- [Documentation Guardian](guides/documentation-guardian-workflow.md) - Automated documentation quality checks
 
 ### Reports & Metrics
 - [Test Reports](reports/) - Test execution reports and metrics
