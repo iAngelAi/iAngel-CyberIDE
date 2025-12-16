@@ -161,6 +161,13 @@ pids/
 # Neural status (generated at runtime)
 neural_status.json
 
+# Metrics data (generated at runtime)
+metrics/
+
+# Test scripts (development only)
+test_metrics_api.py
+test_backend_endpoint.py
+
 # Temporary analysis files
 type_assertion_audit.md
 type_assertion_fixes.json
