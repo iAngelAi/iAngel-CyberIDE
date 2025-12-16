@@ -55,11 +55,11 @@ class LLMProviderError(AgentEvaluatorError):
 class AgentEvaluator:
     """
     LLM-as-a-Judge evaluator for agent conformity monitoring.
-    
+
     This class analyzes agent conversations to detect violations of their
     specific rules defined in system prompts. It uses an external LLM to
     perform the evaluation.
-    
+
     Usage:
         evaluator = AgentEvaluator(llm_provider="openai", model="gpt-4")
         result = evaluator.evaluate(
@@ -71,9 +71,9 @@ class AgentEvaluator:
         )
         print(result.rule_adherence_score)
     """
-    
+
     SUPPORTED_PROVIDERS = ["openai", "anthropic", "google", "mock"]
-    
+
     def __init__(
         self,
         llm_provider: Literal["openai", "anthropic", "google", "mock"] = "mock",
@@ -82,12 +82,12 @@ class AgentEvaluator:
     ):
         """
         Initialize the Agent Evaluator.
-        
+
         Args:
             llm_provider: LLM provider to use for evaluation
             model: Specific model to use (e.g., 'gpt-4', 'claude-3-opus')
             api_key: API key for the LLM provider (if required)
-        
+
         Raises:
             ValueError: If provider is not supported
         """
@@ -96,32 +96,32 @@ class AgentEvaluator:
                 f"Unsupported LLM provider: {llm_provider}. "
                 f"Supported: {', '.join(self.SUPPORTED_PROVIDERS)}"
             )
-        
+
         self.llm_provider = llm_provider
         self.model = model
         self.api_key = api_key
-        
+
         # Initialize provider client (lazy loading)
         self._client = None
-    
+
     def extract_rules_from_prompt(
         self,
         prompt_input: AgentPromptInput,
     ) -> List[ExtractedRule]:
         """
         Extract specific rules from agent system prompt.
-        
+
         This method parses the agent's markdown prompt to identify:
         - Coding standards (e.g., "no quick fixes", "no any type")
         - Workflow rules (e.g., "must document ADRs")
         - Technology constraints (e.g., "Python/TS only unless justified")
-        
+
         Args:
             prompt_input: Agent prompt input with content or file path
-        
+
         Returns:
             List of extracted rules
-        
+
         Raises:
             RuleExtractionError: If rule extraction fails
         """
@@ -140,11 +140,11 @@ class AgentEvaluator:
                 raise RuleExtractionError(
                     "Either prompt_content or prompt_file_path must be provided"
                 )
-            
+
             rules: List[ExtractedRule] = []
-            
+
             # Extract rules from different sections using regex patterns
-            
+
             # Pattern 1: <mandate> tags
             mandate_pattern = r'<mandate[^>]*>(.*?)</mandate>'
             mandates = re.findall(mandate_pattern, content, re.DOTALL)
@@ -157,7 +157,7 @@ class AgentEvaluator:
                         is_mandatory=True,
                         context="Core mandate from agent specification"
                     ))
-            
+
             # Pattern 2: <principle> tags
             principle_pattern = r'<principle[^>]*label="([^"]*)"[^>]*>(.*?)</principle>'
             principles = re.findall(principle_pattern, content, re.DOTALL)
@@ -170,7 +170,7 @@ class AgentEvaluator:
                         is_mandatory=True,
                         context="Architectural/operational principle"
                     ))
-            
+
             # Pattern 3: Coding standards sections
             standards_pattern = r'<coding_standards[^>]*>(.*?)</coding_standards>'
             standards_match = re.search(standards_pattern, content, re.DOTALL)
@@ -188,7 +188,7 @@ class AgentEvaluator:
                             is_mandatory=True,
                             context=f"Coding standard for {tag}"
                         ))
-            
+
             # Pattern 4: Workflow steps
             step_pattern = r'<step[^>]*label="([^"]*)"[^>]*>(.*?)</step>'
             steps = re.findall(step_pattern, content, re.DOTALL)
@@ -201,7 +201,7 @@ class AgentEvaluator:
                         is_mandatory=False,  # Workflow steps are often recommendations
                         context="Recommended workflow step"
                     ))
-            
+
             # Pattern 5: Explicit "Tu refuses" or "Tu évites" statements
             refusal_pattern = r'(Tu refuses?[^.!?]+[.!?]|Tu évites?[^.!?]+[.!?])'
             refusals = re.findall(refusal_pattern, content, re.IGNORECASE)
@@ -214,19 +214,19 @@ class AgentEvaluator:
                         is_mandatory=True,
                         context="Explicit constraint from agent specification"
                     ))
-            
+
             if not rules:
                 raise RuleExtractionError(
                     f"No rules extracted from prompt for agent: {prompt_input.agent_name}"
                 )
-            
+
             return rules
-            
+
         except (IOError, OSError) as e:
             raise RuleExtractionError(f"Failed to read prompt file: {e}") from e
         except Exception as e:
             raise RuleExtractionError(f"Rule extraction failed: {e}") from e
-    
+
     def evaluate(
         self,
         agent_prompt: AgentPromptInput | str,
@@ -235,22 +235,22 @@ class AgentEvaluator:
     ) -> EvaluationResult:
         """
         Evaluate agent conversation for rule adherence.
-        
+
         This method:
         1. Extracts rules from the agent prompt
         2. Analyzes the conversation (focusing on recent messages)
         3. Uses LLM to detect violations
         4. Computes a Rule Adherence Score (0-100)
         5. Returns structured evaluation result
-        
+
         Args:
             agent_prompt: Agent prompt input (string path or AgentPromptInput object)
             conversation: List of conversation messages to evaluate
             focus_on_last_n_messages: How many recent messages to focus on
-        
+
         Returns:
             EvaluationResult with score, violations, and metadata
-        
+
         Raises:
             EvaluationError: If evaluation fails
             ValidationError: If inputs are invalid
@@ -265,49 +265,49 @@ class AgentEvaluator:
                 )
             else:
                 prompt_input = agent_prompt
-            
+
             # Validate conversation
             if not conversation:
                 raise EvaluationError("Conversation cannot be empty")
-            
+
             # Validate all messages are ConversationMessage instances
             for i, msg in enumerate(conversation):
                 if not isinstance(msg, ConversationMessage):
                     raise EvaluationError(
                         f"Message at index {i} is not a ConversationMessage"
                     )
-            
+
             # Extract rules from prompt
             rules = self.extract_rules_from_prompt(prompt_input)
-            
+
             # Focus on most recent messages (agent's last responses)
             recent_messages = conversation[-focus_on_last_n_messages:]
-            
+
             # Find the last agent response to evaluate
             last_agent_msg = None
             for msg in reversed(recent_messages):
                 if msg.role in ["agent", "assistant"]:
                     last_agent_msg = msg
                     break
-            
+
             if not last_agent_msg:
                 raise EvaluationError(
                     "No agent/assistant message found in conversation"
                 )
-            
+
             # Perform LLM-based evaluation
             violations = self._evaluate_with_llm(
                 rules=rules,
                 agent_response=last_agent_msg.content,
                 conversation_context=recent_messages,
             )
-            
+
             # Calculate Rule Adherence Score
             score = self._calculate_adherence_score(
                 total_rules=len(rules),
                 violations=violations,
             )
-            
+
             # Build result
             result = EvaluationResult(
                 agent_name=prompt_input.agent_name,
@@ -318,16 +318,16 @@ class AgentEvaluator:
                 conversation_length=len(conversation),
                 summary=self._generate_summary(score, violations),
             )
-            
+
             return result
-            
+
         except RuleExtractionError as e:
             raise EvaluationError(f"Rule extraction failed: {e}") from e
         except ValidationError as e:
             raise EvaluationError(f"Validation error: {e}") from e
         except Exception as e:
             raise EvaluationError(f"Evaluation failed: {e}") from e
-    
+
     def _evaluate_with_llm(
         self,
         rules: List[ExtractedRule],
@@ -336,27 +336,27 @@ class AgentEvaluator:
     ) -> List[RuleViolation]:
         """
         Use LLM to detect rule violations in agent response.
-        
+
         Args:
             rules: List of rules to check
             agent_response: The agent's response to evaluate
             conversation_context: Recent conversation for context
-        
+
         Returns:
             List of detected violations
-        
+
         Raises:
             LLMProviderError: If LLM call fails
         """
         if self.llm_provider == "mock":
             # Mock implementation for testing
             return self._mock_evaluate(rules, agent_response)
-        
+
         # Build evaluation prompt for the LLM
         evaluation_prompt = self._build_evaluation_prompt(
             rules, agent_response, conversation_context
         )
-        
+
         try:
             # Call appropriate LLM provider
             if self.llm_provider == "openai":
@@ -367,12 +367,12 @@ class AgentEvaluator:
                 violations = self._evaluate_with_google(evaluation_prompt)
             else:
                 raise LLMProviderError(f"Provider not implemented: {self.llm_provider}")
-            
+
             return violations
-            
+
         except Exception as e:
             raise LLMProviderError(f"LLM evaluation failed: {e}") from e
-    
+
     def _build_evaluation_prompt(
         self,
         rules: List[ExtractedRule],
@@ -384,12 +384,12 @@ class AgentEvaluator:
             f"- [{rule.rule_type}] {rule.rule_text}"
             for rule in rules if rule.is_mandatory
         ])
-        
+
         context_text = "\n".join([
             f"[{msg.role}]: {msg.content[:500]}..."
             for msg in conversation_context[:-1]  # Exclude last message
         ])
-        
+
         return f"""You are an expert evaluator assessing whether an AI agent's response adheres to its specific rules.
 
 AGENT'S RULES:
@@ -425,7 +425,7 @@ Output your analysis as JSON with this structure:
 
 If no violations are found, return {{"violations": []}}.
 """
-    
+
     def _mock_evaluate(
         self,
         rules: List[ExtractedRule],
@@ -433,14 +433,14 @@ If no violations are found, return {{"violations": []}}.
     ) -> List[RuleViolation]:
         """
         Mock evaluation for testing (no actual LLM call).
-        
+
         Performs simple pattern matching to detect obvious violations.
         """
         violations: List[RuleViolation] = []
-        
+
         # Check for common anti-patterns mentioned in rules
         response_lower = agent_response.lower()
-        
+
         # Check for "quick fix" mentions if rules prohibit them
         for rule in rules:
             if "quick fix" in rule.rule_text.lower() and "refuses" in rule.rule_text.lower():
@@ -452,7 +452,7 @@ If no violations are found, return {{"violations": []}}.
                         evidence=self._extract_evidence(agent_response, "quick fix"),
                         suggested_correction="Remove references to quick fixes and implement proper solutions"
                     ))
-        
+
         # Check for "any" type usage in TypeScript rules
         for rule in rules:
             if "typescript" in rule.rule_type.lower() and "any" in rule.rule_text.lower():
@@ -464,37 +464,37 @@ If no violations are found, return {{"violations": []}}.
                         evidence=self._extract_evidence(agent_response, "any"),
                         suggested_correction="Replace 'any' with proper type definitions or 'unknown' with type guards"
                     ))
-        
+
         return violations
-    
+
     def _extract_evidence(self, text: str, keyword: str, context_chars: int = 100) -> str:
         """Extract evidence snippet containing keyword with surrounding context."""
         keyword_lower = keyword.lower()
         text_lower = text.lower()
-        
+
         idx = text_lower.find(keyword_lower)
         if idx == -1:
             return text[:200]  # Return first 200 chars if keyword not found
-        
+
         start = max(0, idx - context_chars)
         end = min(len(text), idx + len(keyword) + context_chars)
-        
+
         snippet = text[start:end]
         if start > 0:
             snippet = "..." + snippet
         if end < len(text):
             snippet = snippet + "..."
-        
+
         return snippet
-    
+
     def _evaluate_with_openai(self, prompt: str) -> List[RuleViolation]:
         """Evaluate using OpenAI API."""
         try:
             import openai
-            
+
             if not self.api_key:
                 raise LLMProviderError("OpenAI API key not provided")
-            
+
             client = openai.OpenAI(api_key=self.api_key)
             response = client.chat.completions.create(
                 model=self.model,
@@ -504,30 +504,30 @@ If no violations are found, return {{"violations": []}}.
                 ],
                 temperature=0.0,  # Deterministic evaluation
             )
-            
+
             result_text = response.choices[0].message.content
             result_json = json.loads(result_text)
-            
+
             violations = [
                 RuleViolation(**violation)
                 for violation in result_json.get("violations", [])
             ]
-            
+
             return violations
-            
+
         except ImportError as e:
             raise LLMProviderError("OpenAI library not installed") from e
         except Exception as e:
             raise LLMProviderError(f"OpenAI API call failed: {e}") from e
-    
+
     def _evaluate_with_anthropic(self, prompt: str) -> List[RuleViolation]:
         """Evaluate using Anthropic Claude API."""
         try:
             import anthropic
-            
+
             if not self.api_key:
                 raise LLMProviderError("Anthropic API key not provided")
-            
+
             client = anthropic.Anthropic(api_key=self.api_key)
             response = client.messages.create(
                 model=self.model,
@@ -537,39 +537,39 @@ If no violations are found, return {{"violations": []}}.
                     {"role": "user", "content": prompt}
                 ]
             )
-            
+
             result_text = response.content[0].text
             result_json = json.loads(result_text)
-            
+
             violations = [
                 RuleViolation(**violation)
                 for violation in result_json.get("violations", [])
             ]
-            
+
             return violations
-            
+
         except ImportError as e:
             raise LLMProviderError("Anthropic library not installed") from e
         except Exception as e:
             raise LLMProviderError(f"Anthropic API call failed: {e}") from e
-    
+
     def _evaluate_with_google(self, prompt: str) -> List[RuleViolation]:
         """Evaluate using Google Gemini API."""
         try:
             from google.cloud import aiplatform
-            
+
             if not self.api_key:
                 raise LLMProviderError("Google API key not provided")
-            
+
             # This is a simplified implementation
             # Real implementation would use Vertex AI or Gemini API
             raise LLMProviderError("Google provider not fully implemented yet")
-            
+
         except ImportError as e:
             raise LLMProviderError("Google Cloud AI library not installed") from e
         except Exception as e:
             raise LLMProviderError(f"Google API call failed: {e}") from e
-    
+
     def _calculate_adherence_score(
         self,
         total_rules: int,
@@ -577,7 +577,7 @@ If no violations are found, return {{"violations": []}}.
     ) -> float:
         """
         Calculate Rule Adherence Score (0-100).
-        
+
         Scoring algorithm:
         - Start at 100
         - Deduct points based on violation severity:
@@ -586,33 +586,33 @@ If no violations are found, return {{"violations": []}}.
           - Medium: -5 points per violation
           - Low: -2 points per violation
         - Minimum score is 0
-        
+
         Args:
             total_rules: Total number of rules checked
             violations: List of detected violations
-        
+
         Returns:
             Score between 0 and 100
         """
         if total_rules == 0:
             return 100.0  # No rules to violate
-        
+
         score = 100.0
-        
+
         severity_penalties = {
             "critical": 20.0,
             "high": 10.0,
             "medium": 5.0,
             "low": 2.0,
         }
-        
+
         for violation in violations:
             penalty = severity_penalties.get(violation.severity, 5.0)
             score -= penalty
-        
+
         # Ensure score is in valid range
         return max(0.0, min(100.0, score))
-    
+
     def _generate_summary(
         self,
         score: float,
@@ -627,22 +627,22 @@ If no violations are found, return {{"violations": []}}.
             status = "Needs Improvement"
         else:
             status = "Poor"
-        
+
         if not violations:
             return f"{status} - No rule violations detected. Score: {score:.1f}/100"
-        
+
         violation_summary = ", ".join([
             f"{v.severity} ({v.rule_description[:50]}...)"
             for v in violations[:3]
         ])
-        
+
         more_text = f" and {len(violations) - 3} more" if len(violations) > 3 else ""
-        
+
         return (
             f"{status} - {len(violations)} violation(s) detected: "
             f"{violation_summary}{more_text}. Score: {score:.1f}/100"
         )
-    
+
     def evaluate_to_json(
         self,
         agent_prompt: AgentPromptInput | str,
@@ -652,22 +652,22 @@ If no violations are found, return {{"violations": []}}.
     ) -> str:
         """
         Evaluate and return result as JSON string.
-        
+
         Convenience method for integration with monitoring systems.
-        
+
         Args:
             agent_prompt: Agent prompt input
             conversation: Conversation to evaluate
             output_file: Optional file to write JSON to
             **kwargs: Additional arguments for evaluate()
-        
+
         Returns:
             JSON string of evaluation result
         """
         result = self.evaluate(agent_prompt, conversation, **kwargs)
         json_str = result.model_dump_json(indent=2)
-        
+
         if output_file:
             output_file.write_text(json_str, encoding="utf-8")
-        
+
         return json_str
