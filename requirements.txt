@@ -31,3 +31,6 @@ anthropic>=0.5.0
 # Vector Database & Embeddings (Pour la mémoire vectorielle RAG)
 chromadb>=0.4.0
 sentence-transformers>=2.2.0
+
+# High-Performance JSON (Pour MetricsManager haute performance)
+orjson>=3.9.15
