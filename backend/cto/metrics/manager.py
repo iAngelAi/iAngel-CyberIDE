@@ -27,7 +27,7 @@ Date: 2025-12-16
 """
 
 import asyncio
-import json
+import orjson
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
@@ -387,9 +387,19 @@ class MetricsManager:
         """
         Synchronous JSON write helper (called in thread pool).
         
+        Uses orjson for high-performance serialization with:
+        - OPT_INDENT_2: Pretty-print with 2-space indentation for readability
+        - Native datetime serialization (no custom encoder needed)
+        - Binary mode for maximum performance
+        
         Args:
             filepath: Path to write JSON file
             data: Dictionary to serialize as JSON
         """
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        # orjson.dumps returns bytes, write in binary mode for performance
+        json_bytes = orjson.dumps(
+            data,
+            option=orjson.OPT_INDENT_2  # Pretty-print for debugging/readability
+        )
+        with open(filepath, 'wb') as f:
+            f.write(json_bytes)
