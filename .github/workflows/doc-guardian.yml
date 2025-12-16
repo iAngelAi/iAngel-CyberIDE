@@ -106,7 +106,7 @@ jobs:
           - **Documentation files**: ${{ steps.changed-files.outputs.md_count }}
           
           ### Why This Matters
-          According to our [Documentation Standards (ADR-002)](../docs/adr/ADR-002-documentation-standards.md), code changes should be accompanied by documentation updates to prevent **Code Rot** - the divergence between code and documentation.
+          According to our [Documentation Standards (ADR-002)](docs/adr/ADR-002-documentation-standards.md), code changes should be accompanied by documentation updates to prevent **Code Rot** - the divergence between code and documentation.
           
           ### Recommendations
           
@@ -134,7 +134,7 @@ jobs:
           
           1. **If documentation update is needed**: Add relevant `.md` file updates to this PR
           2. **If no documentation update is needed**: Add a comment explaining why (e.g., internal refactoring, test-only changes)
-          3. **For questions**: Consult the DocXpert agent in `.github/agents/DocXpert.agent.md`
+          3. **For questions**: Consult the DocXpert agent
           
           ### Bypassing This Check
           
@@ -229,12 +229,25 @@ jobs:
           echo "📁 Checking for directories without README.md..."
           DIRS_WITHOUT_README=""
           
-          for dir in backend/cto/* src/components/*; do
-            if [ -d "$dir" ] && [ ! -f "$dir/README.md" ]; then
-              echo "  ⚠️  Missing README: $dir"
-              DIRS_WITHOUT_README="${DIRS_WITHOUT_README}${dir}\n"
-            fi
-          done
+          # Check backend subdirectories if they exist
+          if [ -d "backend/cto" ]; then
+            for dir in backend/cto/*; do
+              if [ -d "$dir" ] && [ ! -f "$dir/README.md" ]; then
+                echo "  ⚠️  Missing README: $dir"
+                DIRS_WITHOUT_README="${DIRS_WITHOUT_README}${dir}\n"
+              fi
+            done
+          fi
+          
+          # Check frontend subdirectories if they exist
+          if [ -d "src/components" ]; then
+            for dir in src/components/*; do
+              if [ -d "$dir" ] && [ ! -f "$dir/README.md" ]; then
+                echo "  ⚠️  Missing README: $dir"
+                DIRS_WITHOUT_README="${DIRS_WITHOUT_README}${dir}\n"
+              fi
+            done
+          fi
           
           if [ -z "$DIRS_WITHOUT_README" ]; then
             echo "  ✅ All major directories have README files"
