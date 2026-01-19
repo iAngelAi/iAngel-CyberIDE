@@ -1,5 +1,8 @@
 # CyberIDE Documentation
 
+> **Latest Update**: Documentation audit completed 2026-01-19. Score: 85/100 (ÉLEVÉ).  
+> See [Audit Summary](AUDIT_SUMMARY.md) | [Full Report](reports/AUDIT_DOCUMENTATION_2026-01-19.md)
+
 ## Overview
 
 This directory contains comprehensive documentation for the CyberIDE project - a Neural IDE with 3D brain visualization that reflects project health in real-time.
@@ -33,6 +36,8 @@ This directory contains comprehensive documentation for the CyberIDE project - a
 - [Documentation Guardian](guides/documentation-guardian-workflow.md) - Automated documentation quality checks
 
 ### Reports & Metrics
+- [Documentation Audit Summary](AUDIT_SUMMARY.md) - Executive summary of documentation audit (2026-01-19)
+- [Complete Documentation Audit](reports/AUDIT_DOCUMENTATION_2026-01-19.md) - Comprehensive audit report
 - [Test Reports](reports/) - Test execution reports and metrics
 - [Performance Metrics](reports/performance.md) - System performance data
 
