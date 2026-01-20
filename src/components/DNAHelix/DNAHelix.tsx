@@ -158,18 +158,36 @@ export const DNAHelix: React.FC<DNAHelixProps & {
     groupRef.current.rotation.y += rotationSpeed * delta;
   });
 
-  // Fonction pour obtenir la couleur d'un node source
+  // Fonction pour obtenir la couleur d'un node source basé sur l'extension ou le statut
   const getSourceNodeColor = (node: SourceFileNode) => {
-    switch (node.testStatus) {
-      case 'passing':
-        return DNA_COLORS.PASSING;
-      case 'failing':
-        return DNA_COLORS.FAILING;
-      case 'partial':
-        return DNA_COLORS.PARTIAL;
-      default:
-        return DNA_COLORS.NONE;
+    // Si le fichier a des tests qui échouent, le rouge est prioritaire (ALERTE)
+    if (node.testStatus === 'failing') {
+      return DNA_COLORS.FAILING;
     }
+    
+    // Si le fichier a des tests qui passent, on peut le rendre "lumineux" (vert)
+    // OU garder sa couleur d'origine. Pour l'instant, priorité au statut.
+    if (node.testStatus === 'passing') {
+      return DNA_COLORS.PASSING;
+    }
+
+    // Sinon, couleur basée sur l'extension (Identité du fichier)
+    const ext = node.extension?.toLowerCase() || '';
+    
+    // Palette Cyberpunk pour langages
+    if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) return '#00f0ff'; // Cyan (JS/TS)
+    if (['.py', '.pyw'].includes(ext)) return '#3776ab'; // Python Blue
+    if (['.rs', '.rust'].includes(ext)) return '#e43b44'; // Rust Orange/Red
+    if (['.go'].includes(ext)) return '#00add8'; // Go Turquoise
+    if (['.java', '.kt', '.scala'].includes(ext)) return '#f89820'; // Java/JVM Orange
+    if (['.c', '.cpp', '.h', '.hpp'].includes(ext)) return '#5e97f6'; // C/C++ Blue
+    if (['.css', '.scss', '.sass', '.less'].includes(ext)) return '#ff0099'; // Style Pink
+    if (['.html', '.xml', '.svg'].includes(ext)) return '#e34c26'; // Markup Orange
+    if (['.json', '.yaml', '.yml', '.toml'].includes(ext)) return '#f1fa8c'; // Config Yellow
+    if (['.md', '.txt', '.rst'].includes(ext)) return '#8be9fd'; // Docs Light Blue
+    if (['.sh', '.bash', '.zsh', '.fish'].includes(ext)) return '#50fa7b'; // Shell Green
+    
+    return DNA_COLORS.NONE; // Gris par défaut
   };
 
   // Fonction pour obtenir la couleur d'un node test

@@ -254,3 +254,40 @@ class ProjectMetrics(BaseModel):
             )
             return 100.0
         return v
+
+
+class NeuralConfig(BaseModel):
+    """
+    Configuration for the Neural Core, loaded from neural.config.json.
+    Allows adapting the system to different project structures and languages.
+    """
+    project_type: str = Field(default="auto", description="Project type (python, node, rust, etc.)")
+    source_dirs: List[str] = Field(default_factory=lambda: ["src", "lib", "app", "neural_cli"])
+    test_dirs: List[str] = Field(default_factory=lambda: ["tests", "__tests__", "spec"])
+    file_extensions: List[str] = Field(
+        default_factory=lambda: [".py", ".ts", ".tsx", ".js", ".jsx", ".rs", ".go", ".java"]
+    )
+    test_patterns: List[str] = Field(
+        default_factory=lambda: [
+            "test_*.py", "*_test.py",
+            "*.test.ts", "*.test.tsx", "*.spec.ts",
+            "*.test.js", "*.spec.js"
+        ]
+    )
+    test_command: Optional[str] = Field(default=None, description="Command to run tests (e.g. 'npm test')")
+    
+    # Mapping folders to brain regions
+    # Regions: core-logic, api-integration, ui-components, data-layer, tests, documentation
+    region_mapping: Dict[str, List[str]] = Field(
+        default_factory=lambda: {
+            "core-logic": ["utils", "lib", "core", "services"],
+            "api-integration": ["api", "routes", "controllers", "graphql"],
+            "ui-components": ["components", "views", "pages", "ui"],
+            "data-layer": ["models", "schemas", "database", "store"],
+            "tests": ["tests", "__tests__", "spec"],
+            "documentation": ["docs", "documentation"]
+        }
+    )
+
+    class Config:
+        extra = "ignore"  # Allow extra fields for future compatibility

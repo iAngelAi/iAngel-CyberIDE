@@ -177,25 +177,52 @@ const NeuralNode: React.FC<NeuralNodeProps> = ({ region }) => {
   const glowRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
-    if (meshRef.current && region.illumination > 0) {
-      // Enhanced pulsing effect for active nodes
-      const pulse = Math.sin(state.clock.elapsedTime * 3) * 0.15 + 0.85;
-      meshRef.current.scale.setScalar(0.3 * pulse);
+    if (meshRef.current) {
+      const time = state.clock.elapsedTime;
       
-      // Rotate the node slightly for dynamic effect
-      meshRef.current.rotation.x = state.clock.elapsedTime * 0.5;
-      meshRef.current.rotation.y = state.clock.elapsedTime * 0.3;
+      // Base pulse
+      let pulse = Math.sin(time * 3) * 0.15 + 0.85;
+      
+      // Critical State: Glitch / Jitter Effect
+      if (region.status === 'critical') {
+        // Fast, irregular vibration
+        const jitter = (Math.random() - 0.5) * 0.2;
+        meshRef.current.position.x = region.position[0] + jitter;
+        meshRef.current.position.y = region.position[1] + jitter;
+        meshRef.current.position.z = region.position[2] + jitter;
+        
+        // Aggressive pulsing
+        pulse = Math.sin(time * 15) * 0.3 + 1.0;
+      } else {
+        // Smooth floating for healthy nodes
+        meshRef.current.rotation.x = time * 0.5;
+        meshRef.current.rotation.y = time * 0.3;
+        
+        // Reset position to original (smooth return)
+        meshRef.current.position.lerp(new THREE.Vector3(...region.position), 0.1);
+      }
+
+      if (region.illumination > 0) {
+        meshRef.current.scale.setScalar(0.3 * pulse);
+      }
     }
     
     // Animate glow
     if (glowRef.current && region.illumination > 0) {
       const glowPulse = Math.sin(state.clock.elapsedTime * 4) * 0.2 + 0.8;
       glowRef.current.scale.setScalar(0.5 * glowPulse);
+      
+      // Critical glow flickers
+      if (region.status === 'critical') {
+         glowRef.current.material.opacity = Math.random() * 0.5 + 0.2;
+      }
     }
   });
 
   const color = getStatusColor(region.status);
-  const emissiveIntensity = region.illumination * 2.5;
+  const emissiveIntensity = region.status === 'critical' 
+    ? 4.0 // Super bright red for errors
+    : region.illumination * 2.5;
 
   return (
     <group position={region.position}>

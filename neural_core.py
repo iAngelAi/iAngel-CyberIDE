@@ -447,9 +447,21 @@ def main():
     parser.add_argument('--no-install', action='store_true', help='Skip auto-install of dependencies')
     parser.add_argument('--no-venv', action='store_true', help='Skip virtual environment (use system Python)')
     parser.add_argument('--create-venv', action='store_true', help='Create virtual environment and exit')
+    parser.add_argument('--target', '-t', type=str, help='Target project directory to monitor', default=None)
     args = parser.parse_args()
 
     print_header()
+
+    # Handle Target Project
+    if args.target:
+        target_path = Path(args.target).resolve()
+        if not target_path.exists() or not target_path.is_dir():
+            print(f"\n{Colors.RED}❌ Error: Target directory '{target_path}' does not exist.{Colors.END}")
+            sys.exit(1)
+        os.environ["CYBER_PROJECT_ROOT"] = str(target_path)
+        print(f"\n{Colors.CYAN}🎯 Targeting external project:{Colors.END} {Colors.BOLD}{target_path}{Colors.END}")
+    else:
+        print(f"\n{Colors.CYAN}🏠 Targeting local CyberIDE project:{Colors.END} {Colors.BOLD}{Path.cwd()}{Colors.END}")
 
     # System check
     python_cmd, venv_path = system_check(show_venv=not args.no_venv)

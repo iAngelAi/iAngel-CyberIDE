@@ -16,24 +16,29 @@ from datetime import datetime, timezone
 import re
 
 from .models import PytestRunResult
+from .models import NeuralConfig
 
 
 class PytestAnalyzer:
     """
     Analyzes test results and coverage for the project.
 
-    Integrates with pytest and pytest-cov to get comprehensive
-    test metrics that drive the neural illumination.
+    Now supports generic test runners via NeuralConfig (npm, cargo, go test, etc.)
+    in addition to deep pytest integration.
     """
 
-    def __init__(self, project_root: str):
+    def __init__(self, project_root: str, config: NeuralConfig = None):
         """
         Initialize the test analyzer.
 
         Args:
             project_root: Absolute path to the project root directory
+            config: NeuralConfig object with project settings
         """
         self.project_root = Path(project_root)
+        self.config = config or NeuralConfig()
+        
+        # Python specific paths
         self.tests_dir = self.project_root / "tests"
         self.coverage_file = self.project_root / ".coverage"
         self.pytest_cache = self.project_root / ".pytest_cache"
@@ -44,7 +49,127 @@ class PytestAnalyzer:
         verbose: bool = True
     ) -> PytestRunResult:
         """
-        Run pytest tests and collect results.
+        Run tests and collect results.
+        Dispatches to specific runner based on project type.
+        """
+        if self.config.project_type != "python" and self.config.test_command:
+            return self.run_generic_tests(verbose)
+            
+        return self.run_pytest(path, verbose)
+
+    def run_generic_tests(self, verbose: bool = True) -> PytestRunResult:
+        """
+        Run generic tests using the configured command.
+        Robust implementation using shlex for parsing and shutil for validation.
+        """
+        import shlex
+        import shutil
+
+        if not self.config.test_command:
+            return PytestRunResult(total_tests=0, errors=0)
+
+        try:
+            # 1. Parse command properly (handles quotes like: npm test -- --filter="foo")
+            command_parts = shlex.split(self.config.test_command)
+            executable = command_parts[0]
+
+            # 2. Verify executable exists in PATH
+            if not shutil.which(executable):
+                print(f"❌ Error: Command '{executable}' not found in PATH.")
+                return PytestRunResult(
+                    total_tests=0,
+                    passed=0,
+                    failed=0,
+                    errors=1,
+                    duration=0.0,
+                    failed_tests=[{"name": "System Check", "error": f"Command '{executable}' not found"}]
+                )
+
+            print(f"🚀 Running generic tests: {self.config.test_command}")
+            
+            # 3. Execute safely
+            start_time = datetime.now(timezone.utc)
+            result = subprocess.run(
+                command_parts,
+                cwd=str(self.project_root),
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+            duration = (datetime.now(timezone.utc) - start_time).total_seconds()
+            
+            return self._parse_generic_output(result, duration)
+            
+        except subprocess.TimeoutExpired:
+            print("⚠ Test execution timeout after 5 minutes")
+            return PytestRunResult(
+                total_tests=0,
+                passed=0,
+                failed=1,
+                errors=1,
+                duration=300.0,
+                failed_tests=[{"name": "Timeout", "error": "Execution exceeded 300s limit"}]
+            )
+        except Exception as e:
+            print(f"❌ Error running generic tests: {e}")
+            return PytestRunResult(
+                total_tests=0,
+                passed=0,
+                failed=0,
+                errors=1,
+                duration=0.0,
+                failed_tests=[{"name": "Execution Error", "error": str(e)}]
+            )
+
+    def _parse_generic_output(self, result: subprocess.CompletedProcess, duration: float) -> PytestRunResult:
+        """
+        Parse generic test output. 
+        Tries to extract numbers, otherwise falls back to exit code.
+        """
+        output = result.stdout + result.stderr
+        exit_code = result.returncode
+        
+        # Try to find common patterns like "5 passing, 2 failing"
+        passed_pattern = r'(\d+)\s*(?:passing|passed|success)'
+        failed_pattern = r'(\d+)\s*(?:failing|failed|failure)'
+        
+        passed = 0
+        failed = 0
+        
+        p_match = re.search(passed_pattern, output, re.IGNORECASE)
+        if p_match:
+            passed = int(p_match.group(1))
+            
+        f_match = re.search(failed_pattern, output, re.IGNORECASE)
+        if f_match:
+            failed = int(f_match.group(1))
+            
+        # Fallback based on exit code if regex failed
+        if passed == 0 and failed == 0:
+            if exit_code == 0:
+                passed = 1 # Assume at least one test passed
+            else:
+                failed = 1 # Assume failure
+                
+        total = passed + failed
+        
+        return PytestRunResult(
+            total_tests=total,
+            passed=passed,
+            failed=failed,
+            skipped=0,
+            errors=0 if exit_code == 0 else 1,
+            coverage_percentage=0.0, # Coverage not supported for generic yet
+            duration=duration
+        )
+
+    def run_pytest(
+        self,
+        path: Optional[str] = None,
+        verbose: bool = True
+    ) -> PytestRunResult:
+        """
+        Run pytest tests and collect results (Legacy method).
 
         Args:
             path: Specific test file or directory to run (None = all tests)

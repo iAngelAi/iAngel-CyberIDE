@@ -34,6 +34,8 @@ from .metric_calculator import MetricCalculator
 from .file_mapper import FileMapper, FileMappingResult
 from .git_pulse import GitPulseEngine
 from .test_history import TestHistoryManager
+from .config_loader import ConfigLoader
+from .models import NeuralConfig
 
 
 # ============================================================================
@@ -62,6 +64,7 @@ class NeuralCore:
     """Global state for the Neural Core system."""
     def __init__(self):
         self.project_root: Path = Path.cwd()
+        self.config: NeuralConfig | None = None
         self.watcher: FileWatcher | None = None
         self.test_analyzer: PytestAnalyzer | None = None
         self.metric_calculator: MetricCalculator | None = None
@@ -141,10 +144,15 @@ async def lifespan(app: FastAPI):
         neural_core.project_root = Path(project_root_env)
     print(f"ℹ Project Root: {neural_core.project_root}")
 
+    # Load configuration
+    config_loader = ConfigLoader(str(neural_core.project_root))
+    neural_core.config = config_loader.load_config()
+    print(f"ℹ Project Type: {neural_core.config.project_type}")
+
     # Initialize components
-    neural_core.test_analyzer = PytestAnalyzer(str(neural_core.project_root))
+    neural_core.test_analyzer = PytestAnalyzer(str(neural_core.project_root), config=neural_core.config)
     neural_core.metric_calculator = MetricCalculator(str(neural_core.project_root))
-    neural_core.file_mapper = FileMapper(str(neural_core.project_root))
+    neural_core.file_mapper = FileMapper(str(neural_core.project_root), config=neural_core.config)
     neural_core.test_history_manager = TestHistoryManager(str(neural_core.project_root))
 
     # Load or create initial status

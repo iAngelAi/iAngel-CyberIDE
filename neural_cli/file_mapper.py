@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import re
 import hashlib
+from .models import NeuralConfig
 
 
 @dataclass
@@ -29,8 +30,9 @@ class FileMappingResult:
 class FileMapper:
     """Mappe les fichiers source aux fichiers de test."""
 
-    def __init__(self, project_root: str):
+    def __init__(self, project_root: str, config: NeuralConfig = None):
         self.root = Path(project_root)
+        self.config = config or NeuralConfig()
 
     def scan_and_map(self) -> FileMappingResult:
         """Scanne le projet et crée le mapping."""
@@ -51,89 +53,124 @@ class FileMapper:
         )
 
     def _find_source_files(self) -> List[Dict]:
-        """Trouve tous les fichiers source."""
+        """Trouve tous les fichiers source selon la config."""
+        import fnmatch
+        
         source_files = []
+        
+        # Utiliser les dossiers définis dans la config
+        dirs_to_scan = self.config.source_dirs
+        extensions = self.config.file_extensions
 
-        # Patterns pour les fichiers source
-        patterns = [
-            self.root / "src" / "**" / "*.ts",
-            self.root / "src" / "**" / "*.tsx",
-            self.root / "neural_cli" / "**" / "*.py"
+        # Patterns d'exclusion OBLIGATOIRES (Performance & Sécurité)
+        # On force ces exclusions pour éviter de scanner des millions de fichiers
+        forced_excludes = [
+            '**/node_modules/**', '**/__pycache__/**', '**/.git/**', 
+            '**/target/**', '**/dist/**', '**/build/**', '**/vendor/**', 
+            '**/.venv/**', '**/.env', '**/*.d.ts', '**/*.map', '**/*.min.js'
         ]
+        
+        # Combiner avec les exclusions de test pour éviter les doublons
+        all_excludes = forced_excludes + self.config.test_patterns
 
-        # Patterns à exclure
-        exclude_patterns = [
-            r'.*\.test\.(ts|tsx|py)$',
-            r'.*\.spec\.(ts|tsx|py)$',
-            r'.*__tests__.*',
-            r'.*test_.*\.py$',
-            r'.*node_modules.*',
-            r'.*\.d\.ts$',
-            r'.*\.config\.(ts|js)$',
-            r'.*vite-env.*'
-        ]
+        # Pré-compiler les regex pour la performance
+        exclude_regexes = [re.compile(fnmatch.translate(pat)) for pat in all_excludes]
 
-        for pattern in patterns:
-            for file_path in self.root.glob(str(pattern).replace(str(self.root) + "/", "")):
-                # Vérifier si le fichier doit être exclu
-                relative_path = str(file_path.relative_to(self.root))
-                if any(re.match(exc, relative_path) for exc in exclude_patterns):
-                    continue
-
-                # Compter les lignes de code
+        for dir_name in dirs_to_scan:
+            dir_path = self.root / dir_name
+            if not dir_path.exists():
+                continue
+                
+            for ext in extensions:
+                # Glob récursif pour l'extension donnée
+                pattern = f"**/*{ext}"
+                
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        lines = len([l for l in f.readlines() if l.strip() and not l.strip().startswith('#')])
-                except:
-                    lines = 0
+                    # Utiliser rglob est plus sûr et plus rapide que glob manuel
+                    for file_path in dir_path.rglob(f"*{ext}"):
+                        if not file_path.is_file():
+                            continue
+                            
+                        # Chemin relatif pour le matching
+                        try:
+                            relative_path = str(file_path.relative_to(self.root))
+                        except ValueError:
+                            continue # Le fichier n'est pas dans root
+                        
+                        # Vérifier exclusions (Optimisé)
+                        if any(regex.match(relative_path) for regex in exclude_regexes):
+                            continue
 
-                file_id = hashlib.md5(relative_path.encode()).hexdigest()[:8]
+                        # Compter les lignes de code (Robuste)
+                        lines = 0
+                        try:
+                            # Lecture avec fallback d'encodage
+                            try:
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    lines = sum(1 for line in f if line.strip())
+                            except UnicodeDecodeError:
+                                with open(file_path, 'r', encoding='latin-1') as f:
+                                    lines = sum(1 for line in f if line.strip())
+                        except Exception:
+                            lines = 0 # Fichier illisible ou binaire, on ignore la taille
 
-                source_files.append({
-                    'id': file_id,
-                    'path': relative_path,
-                    'name': file_path.name,
-                    'extension': file_path.suffix,
-                    'linesOfCode': lines,
-                    'hasTests': False,  # Sera mis à jour après le mapping
-                    'testStatus': 'none'
-                })
+                        file_id = hashlib.md5(relative_path.encode()).hexdigest()[:8]
+
+                        source_files.append({
+                            'id': file_id,
+                            'path': relative_path,
+                            'name': file_path.name,
+                            'extension': file_path.suffix,
+                            'linesOfCode': lines,
+                            'hasTests': False,
+                            'testStatus': 'none'
+                        })
+                except Exception as e:
+                    print(f"⚠ Error scanning directory {dir_path}: {e}")
+                    continue
 
         return source_files
 
     def _find_test_files(self) -> List[Dict]:
-        """Trouve tous les fichiers de test."""
+        """Trouve tous les fichiers de test selon la config."""
         test_files = []
+        
+        dirs_to_scan = self.config.test_dirs
+        patterns = self.config.test_patterns
 
-        # Patterns pour les fichiers de test
-        patterns = [
-            self.root / "tests" / "**" / "*.py",
-            self.root / "src" / "**" / "*.test.ts",
-            self.root / "src" / "**" / "*.test.tsx",
-            self.root / "src" / "**" / "__tests__" / "**" / "*.ts",
-            self.root / "src" / "**" / "__tests__" / "**" / "*.tsx"
-        ]
-
-        for pattern in patterns:
-            for file_path in self.root.glob(str(pattern).replace(str(self.root) + "/", "")):
-                relative_path = str(file_path.relative_to(self.root))
-
-                # Ignorer node_modules
-                if 'node_modules' in relative_path:
+        for dir_name in dirs_to_scan:
+            dir_path = self.root / dir_name
+            if not dir_path.exists():
+                # Try finding tests inside source dirs if dedicated test dir doesn't exist
+                if dir_name not in self.config.source_dirs:
                     continue
+            
+            for pattern in patterns:
+                # Glob récursif
+                glob_pattern = f"**/{pattern}"
+                
+                for file_path in dir_path.glob(glob_pattern):
+                    if not file_path.is_file():
+                        continue
+                        
+                    relative_path = str(file_path.relative_to(self.root))
 
-                file_id = hashlib.md5(relative_path.encode()).hexdigest()[:8]
+                    # Ignorer node_modules et caches
+                    if 'node_modules' in relative_path or '__pycache__' in relative_path:
+                        continue
 
-                test_files.append({
-                    'id': file_id,
-                    'path': relative_path,
-                    'name': file_path.name,
-                    'passed': 0,  # À mettre à jour avec les résultats des tests
-                    'failed': 0,
-                    'skipped': 0,
-                    'coverage': 0.0,
-                    'lastRun': ''
-                })
+                    file_id = hashlib.md5(relative_path.encode()).hexdigest()[:8]
+
+                    test_files.append({
+                        'id': file_id,
+                        'path': relative_path,
+                        'name': file_path.name,
+                        'passed': 0,
+                        'failed': 0,
+                        'skipped': 0,
+                        'coverage': 0.0,
+                        'lastRun': ''
+                    })
 
         return test_files
 
